@@ -1,9 +1,9 @@
-import pandas as pd
+"""import pandas as pd
 import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-"""def transform_data(df):
+def transform_data(df):
 
     sex_mapping = {2: "Male", -2: "Female"}
     genetique_mapping = {-3: "N", 4: "F8", 5: "F9"}
@@ -27,7 +27,7 @@ import sendgrid
 from sendgrid.helpers.mail import Mail
 import ssl
 
-# Désactiver la vérification SSL (Non recommandé pour la production)
+"""# Désactiver la vérification SSL (Non recommandé pour la production)
 ssl._create_default_https_context = ssl._create_unverified_context
 
 api_key = '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'
@@ -53,3 +53,4 @@ try:
     print(response.headers)
 except Exception as e:
     print(f"Votre email a été bien envoyé mais il semble y avoir une petite erreur d'API : {e}")
+"""
