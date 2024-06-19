@@ -1,35 +1,45 @@
 from dal import DAOpatients, DAOmedicament, DAOmedecin
 from models import Patients, Medicament, medecin
 from datetime import datetime
-from test import decision
+
 import matplotlib.pyplot as plt
 
-class PatientService:
+
+class patientServices:
     @staticmethod
     def get_patient_by_username(username):
-        # Implementation to fetch patient
-        pass
+        result = DAOpatients.get_patient_by_username(username)
+        if result:
+            return Patients(*result[0])
+        return None
 
     @staticmethod
     def calculate_age(birth_date):
-        # Implementation to calculate age
-        pass
+        if isinstance(birth_date, str):
+            birth_date = datetime.strptime(birth_date, '%Y-%m-%d')
+        today = datetime.today()
+        return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
 
     @staticmethod
     def fiche_medicale(username):
-        patient = PatientService.get_patient_by_username(username)
+        patient = patientServices.get_patient_by_username(username)
         if not patient:
             return "Patient not found"
-        age = PatientService.calculate_age(patient.dob)
-        medications = MedicamentService.get_all_medicaments_for_patient(patient.id)
-        medical_record = f"Fiche Médicale pour {patient.full_name}\n{'='*30}\n"
-        medical_record += f"Age: {age} ans\nPoids: {patient.weight} kg\nGroupesanguin: {patient.blood_group}\n\nListe des Médicaments:\n{'-'*30}\n"
+        age = patientServices.calculate_age(patient.Date_Naissance)
+        weight = patient.poids
+        blood_group = patient.GR_S
+        medications = MedicamentService.allMedicament(patient.id)
+        
+        medical_record = f"Fiche Médicale pour {patient.Nomcomplet}\n{'='*30}\n"
+        medical_record += f"Age: {age} ans\n"
+        medical_record += f"Poids: {weight} kg\n"
+        medical_record += f"Groupe sanguin: {blood_group}\n"
+        medical_record += f"Type de maladie: {patient.maladie}\n"
+        medical_record += f"\nListe des Médicaments:\n{'-'*30}\n"
         for med in medications:
-            medical_record += f"Nom: {med.nom}\nDose recommandée: {med.dose_recommandee}\nDernière date de prise: {med.dernier_date_de_prise}\nHeure de la dernière prise: {med.time}\n{'-'*30}\n"
+            medical_record += f"Nom: {med.nom}\nDose: {med.dose} UI\nDate de prise: {med.Date}\nHeure de prise: {med.time}\n{'-'*30}\n"
+        
         return medical_record
-
-class patientServices:
-
 
     @staticmethod
     def addPatients(patients: Patients):
@@ -213,6 +223,17 @@ class patientServices:
 
 
 class MedicamentService:
+    @staticmethod
+    
+    def allMedicament(id_patient: int):
+        allmedicaments = []
+        result = DAOmedicament.allMedicament(id_patient)
+        for i in result:
+            med = Medicament(*i)
+            allmedicaments.append(med)
+        return allmedicaments
+    
+    
     @staticmethod
     def ajouterMedicament(medi: Medicament):
         return DAOmedicament.newMedicament(medi)

@@ -37,8 +37,9 @@ class DAOpatients:
         return result
 
     @classmethod
-    def logIn(cls, username: str, password: str):
-        cursor = cls.db.cursor(dictionary=True)  # Create a cursor directly from the class-level db connection
+    def logIn(username: str, password: str):
+        db = 1 # le code necessaire pour se connecter a la base de données
+        cursor = db.cursor(dictionary=True)  # Create a cursor directly from the class-level db connection
         query = "SELECT * FROM Patient WHERE NomUtilisateur = %s AND Motedepasse = %s"
         cursor.execute(query, (username, password))
         result = cursor.fetchall()
@@ -157,4 +158,4 @@ if __name__=='__main__':
     #print(DAOpatients.patient_age2("2020-05-28"))
     #print(DAOpatients.lastPatient())
     #print(DAOmedicament.allMedicament(63))
-    
+     #print(DAOpatients.logOut("123","Email"))
