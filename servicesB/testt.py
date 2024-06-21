@@ -1,13 +1,60 @@
-from dal import DAOpatients, DAOmedicament, DAOmedecin
-from models import Patients, Medicament, medecin,MedicamentPatient
-from datetime import datetime
-
-import matplotlib.pyplot as plt
 from dataclasses import dataclass
-from datetime import datetime, date
-from typing import List
+from dal import DAOpatients, DAOmedicament, DAOmedecin
+from datetime import datetime
+import matplotlib.pyplot as plt
 
+@dataclass
+class Patients:
+    id: int
+    nomutilisateur: str
+    Nomcomplet: str
+    Date_Naissance: str
+    email: str
+    num_tel: str
+    adresse: str
+    mdp: str
+    image: str
+    GR_S: str
+    taille: str
+    poids: str
+    sexe: str
+    antecedant_mere: str
+    antecedant_pere: str
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "nomutilisateur": self.nomutilisateur,
+            "Nomcomplet": self.Nomcomplet,
+            "Date_Naissance": self.Date_Naissance,
+            "email": self.email,
+            "num_tel": self.num_tel,
+            "adresse": self.adresse,
+            "mdp": self.mdp,
+            "image": self.image,
+            "GR_S": self.GR_S,
+            "taille": self.taille,
+            "poids": self.poids,
+            "sexe": self.sexe,
+            "antecedant_mere": self.antecedant_mere,
+            "antecedant_pere": self.antecedant_pere
+        }
+
+@dataclass
+class Medicament:
+    id: int
+    nom: str
+    idPatient: int
+    dose: int
+    Date: str
+    time: str
+
+@dataclass
+class medecin:
+    nom: str
+    specialite: str
+    image: str
+    IdP: int
 
 class patientServices:
     @staticmethod
@@ -24,7 +71,28 @@ class patientServices:
         today = datetime.today()
         return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
 
-    
+    @staticmethod
+    def fiche_medicale(username):
+        patient = patientServices.get_patient_by_username(username)
+        if not patient:
+            return "Patient not found"
+        age = patientServices.calculate_age(patient.Date_Naissance)
+        weight = patient.poids
+        blood_group = patient.GR_S
+        medications = MedicamentService.allMedicament(patient.id)
+        
+        medical_record = f"Fiche Médicale pour {patient.Nomcomplet}\n{'='*30}\n"
+        medical_record += f"Age: {age} ans\n"
+        medical_record += f"Poids: {weight} kg\n"
+        medical_record += f"Groupe sanguin: {blood_group}\n"
+        medical_record += f"Sexe: {patient.sexe}\n"
+        medical_record += f"Antécédent Mère: {patient.antecedant_mere}\n"
+        medical_record += f"Antécédent Père: {patient.antecedant_pere}\n"
+        medical_record += f"\nListe des Médicaments:\n{'-'*30}\n"
+        for med in medications:
+            medical_record += f"Nom: {med.nom}\nDose: {med.dose} UI\nDate de prise: {med.Date}\nHeure de prise: {med.time}\n{'-'*30}\n"
+        
+        return medical_record
 
     @staticmethod
     def addPatients(patients: Patients):
@@ -37,7 +105,7 @@ class patientServices:
     @staticmethod
     def LogIn(nom: str, mdp: str):
         result = DAOpatients.logIn(nom, mdp)
-        patient = Patients(result[0][0], result[0][1], result[0][2], result[0][3], result[0][4], result[0][5], result[0][6], result[0][7], result[0][8], result[0][9], result[0][10], result[0][11], result[0][12], result[0][13], result[0][14])
+        patient = Patients(*result[0])
         return patient
     
     @staticmethod 
@@ -116,16 +184,9 @@ class patientServices:
         return True
     
     @staticmethod
-    def calculate_age(birth_date):
-        if isinstance(birth_date, str):
-            birth_date = datetime.strptime(birth_date, '%Y-%m-%d')
-        today = datetime.today()
-        return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-    
-    @staticmethod
     def LogOut(gmail: str, mdp: str):
         result = DAOpatients.logOut(gmail, mdp)
-        patient = Patients(result[0][0], result[0][1], result[0][2], result[0][3], result[0][4], result[0][5], result[0][6], result[0][7], result[0][8], result[0][9], result[0][10], result[0][11], result[0][12], result[0][13], result[0][14])
+        patient = Patients(*result[0])
         return patient
 
     @staticmethod
@@ -144,7 +205,7 @@ class patientServices:
     @staticmethod
     def lastPatient():
         result = DAOpatients.lastPatient()
-        patient = Patients(result[0][0], result[0][1], result[0][2], result[0][3], result[0][4], result[0][5], result[0][6], result[0][7], result[0][8], result[0][9], result[0][10], result[0][11], result[0][12], result[0][13], result[0][14])
+        patient = Patients(*result[0])
         return patient
     
     @staticmethod
@@ -180,15 +241,13 @@ class patientServices:
 
 class MedicamentService:
     @staticmethod
-    
     def allMedicament(id_patient: int):
         allmedicaments = []
         result = DAOmedicament.allMedicament(id_patient)
         for i in result:
-            med = Medicament(*i)
+            med = Medicament(i[0], i[1], i[2], i[3], i[4], i[5])
             allmedicaments.append(med)
         return allmedicaments
-    
     
     @staticmethod
     def ajouterMedicament(medi: Medicament):
@@ -201,18 +260,9 @@ class MedicamentService:
     @staticmethod
     def searchMed(nom: str, idPatient: int):
         result = DAOmedicament.search(nom, idPatient)
-        med = Medicament(result[0][0], result[0][1], result[0][2], result[0][3], result[0][4], result[0][5])
+        med = Medicament(*result[0])
         return med 
 
-    @staticmethod
-    def allMedicament(id: int):
-        allmedicaments = []
-        result = DAOmedicament.allMedicament(id)
-        for i in result:
-            med = Medicament(i[0], i[1], i[2], i[3], i[4], i[5])
-            allmedicaments.append(med)
-        return allmedicaments
-    
 
 class medecinservices:
     @staticmethod
@@ -226,50 +276,13 @@ class medecinservices:
     @staticmethod
     def searchmedecin(id: int):
         allmedecin = []
-        result = DAOmedecin.getall(id) 
+        result = DAOmedecin.getall(id)
         for i in result:
             Med = medecin(i[0], i[1], i[3], i[2])
             allmedecin.append(Med)
         return allmedecin
-    class FicheMedicale:
-        patient: Patients
-        medecin: medecin
-    medicaments: List[MedicamentPatient]
-
 
 
 if __name__ == "__main__":
-#if __name__ == "__main__":
-
-    
-    #if __name__=="__main__":
-    """patient=Patients(1,"nabil","kella","10/04/2003","nabil.kella@gmail.com","0000000","image.jpg","A",1.80,77,"Homme","adresse","000","oui","non")
-    patientServices.addPatients(patient)
-    patientServices.deletePatients(1)
-    patientServices.ModifyPatients(patients.nom,"000")
-    print(patientServices.LogIn(patient.nom,patient.mdp))
-    print(patientServices.DecisinoPatient(1))
-    MedicamentService.ajouterMedicament(nom,dose,date,time,idPatient)
-    MedicamentService.ajouterMedicament("nom4",80,"2021-01-02","10:00:00",65)
-    MedicamentService.ajouterMedicament(medicament)
-    print(patientServices.LogOut("Email","123"))
-    print(patientServices.checkAge(patientServices.calculate_age(patientServices.patient_age("2003-04-10"))))
-    patientServices.pasParJours(patientServices.calculate_age(patientServices.patient_age(nomutilisateur)))
-    print(patientServices.pasParJours(patientServices.calculate_age(patientServices.patient_age1("oth123"))))
-    print(patientServices.checkAge(patientServices.calculate_age("2020-05-28")))
-    print(patientServices.DecisinoPatient(23))
-    print(patientServices.lastPatient())
-    print(MedicamentService.allMedicament(63))
-    print(MedicamentService.searchMed('nom1',65))"""
-    #medicament2=Medicament(0,"nom2",65,130,"2024-01-04","10")
-    #DAOmedicament.newMedicament(medicament1)
-    #MedicamentService.ajouterMedicament(medicament2)
-
-    #poids=patientServices.patient_poid("q")
-    #age=patientServices.calculate_age(patientServices.patient_age1("q"))
-    #patientServices.generate_steps_plot(age,poids)
-    #print(poids,age)
-    #print(patientServices.pasParJours(14,19))
-    #print(patientServices.checkPoids(patientServices.patient_poid("aze")))
-    #medecinservices.addmedecins("nom","spe",91,"image")
-    #print(medecinservices.searchmedecin(91))
+    # Example usage of fiche_medicale
+    print(patientServices.fiche_medicale("q"))
