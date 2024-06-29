@@ -2,14 +2,14 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import time
 from sklearn.naive_bayes import GaussianNB
-from models import Patients
+from models import patient
 import datetime
 from dal import DAOpatients
 
 def decision(id:int):
 
     list=DAOpatients.search(id)
-    patient=Patients(list[0][0],list[0][1],list[0][2],list[0][3],list[0][4],list[0][5],list[0][6],list[0][7],list[0][8],list[0][9],list[0][10],list[0][11],list[0][12],list[0][13],list[0][14])
+    patient=patient(list[0][0],list[0][1],list[0][2],list[0][3],list[0][4],list[0][5],list[0][6],list[0][7],list[0][8],list[0][9],list[0][10],list[0][11],list[0][12],list[0][13],list[0][14])
     
     data = pd.read_excel("C:\\Users\\kella\\Desktop\\Traitement-des-patients-reduites\\Back-end\\Machig-Learning\\dataSet\\dataSetNumbers.xlsx",sheet_name=1)
 
