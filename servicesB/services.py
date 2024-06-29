@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from datetime import datetime, date
 from typing import List
-from test import decision
-from testt import Patients
+from Analyse_de_donnes.test import decision
+from Analyse_de_donnes.testt import Patients
 from dal import  fetch_medicaments_and_details_for_patient
 from models import patient  # Assurez-vous que votre modèle est bien structuré pour être utilisé ici.
 class patientServices:
