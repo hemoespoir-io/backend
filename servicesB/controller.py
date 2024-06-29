@@ -1,6 +1,8 @@
 from flask import Flask,request,jsonify,session
+from dal import DAOpatients
+from fichemedical import connect_db
 from services import patientServices,MedicamentService,medecinservices
-from models import Patients,Medicament
+from models import patient,medicament
 
 app=Flask(__name__)
 
@@ -63,7 +65,7 @@ def addMedicament():
   idPatient=data.get('idpatient')
   
   #print(nom,dose,date,time,idPatient)
-  medi=Medicament(id=0,nom=nom,idPatient=idPatient,dose=dose,Date=date,time=time)
+  medi=medicament(id=0,nom=nom,idPatient=idPatient,dose=dose,Date=date,time=time)
   #print(medi)
   #nom:str,dose:int,date:str,time:str,idPatient:int
   
@@ -175,5 +177,25 @@ def Age():
   print(type(patientServices.calculate_age(patientServices.patient_age1(nom))))
   return jsonify({'age':patientServices.calculate_age(patientServices.patient_age1(nom))})  
 
-if __name__=='__main__':
-  app.run(debug=True)
+
+app = Flask(__name__)
+
+
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/fichemedical', methods=['GET'])
+def get_patient_details():
+    patient_id = request.args.get('patientid')
+    if not patient_id:
+        return jsonify({"e": "Mi"}), 400
+
+    details, error = patientServices.get_patient_details(patient_id)
+    if error:
+        return jsonify({"error": error}), 500
+
+    return jsonify(details), 200
+
+if __name__ == '__main__':
+    app.run(debug=True)
