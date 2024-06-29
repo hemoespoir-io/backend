@@ -9,7 +9,7 @@ from datetime import datetime, date
 from typing import List
 from Analyse_de_donnes.test import decision
 from Analyse_de_donnes.testt import Patients
-from dal import  fetch_medicaments_and_details_for_patient
+from dal import  fetch_medicaments_details_by_patient_id
 from models import patient  # Assurez-vous que votre modèle est bien structuré pour être utilisé ici.
 class patientServices:
     @staticmethod
@@ -25,7 +25,7 @@ class patientServices:
         patient_info = {
             "patient": patient,
             "medicament": DAOpatients.fetch_medicaments_details_by_patient_id(con, patient_id)
-            #"medecins": DAOpatients.fetch_medecins_details_by_patient_id(con, patient_id) 
+            "medecins": DAOpatients.fetch_medecins_details_by_patient_id(con, patient_id) 
         }
 
         con.close()

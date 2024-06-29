@@ -14,21 +14,6 @@ con = mysql.connect(
 
 cur = con.cursor()
 
-
-def fetch_medicaments_and_details_for_patient(con, Id_Patient):
-    cursor = con.cursor(dictionary=True)
-    query = """
-    SELECT m.nom, mp.dose, mp.derniere_date_de_prise
-    FROM medicament m
-    JOIN medicamentPatients mp ON m.id_Medicament = mp.id_Medicament
-    WHERE mp.Id_Patient = %s
-    """
-    cursor.execute(query, (Id_Patient,))
-    combined_data = cursor.fetchall()
-    return combined_data
-
-
-
 class DAOpatients:
     @staticmethod
    
@@ -114,10 +99,12 @@ class DAOpatients:
     def fetch_medecins_details_by_patient_id(con, Id_Patient):
         cursor = con.cursor(dictionary=True)
         query = """
-        SELECT nom, specialite, Id_Medecin, image, num_urg, DatePriseEncharge
-        FROM medecins
-        WHERE Id_Medecin IN (SELECT Id_Medecin FROM medecinPatients WHERE Id_Patient = %s)
-        """
+            SELECT m.nom, m.specialite ,m.num_urg;
+            FROM medecins m
+            JOIN medecinPatient mp ON m.Id_Medecin = mp.Id_Medecint
+            WHERE mp.Id_Patient = %s
+        """#refait le test avec la meme requette.
+
         print(f"Executing query: {query} with Id_Patient: {Id_Patient}")
         cursor.execute(query, (Id_Patient,))
         medecins_data = cursor.fetchall()
