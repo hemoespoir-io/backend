@@ -108,7 +108,7 @@ class DAOmedicament:
     @staticmethod
     def Ajouter_Medicament(cur, con, medi: medicament):
         cur.execute('INSERT INTO medicament (nom, Id_Patient, id_Medicament) VALUES (%s, %s, %s)',
-                    (medi.nom, medi.Id_Patient, medi.id_Medicament))
+                    (medi.nom_medicament, medi.Id_Patient, medi.id_Medicament))
         con.commit()
 
     @staticmethod

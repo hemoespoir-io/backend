@@ -27,7 +27,7 @@ def connect_db():
 
 class patientServices:
     @staticmethod
-    def get_patient_details(patient_id):
+    def FicheMedicale(patient_id):
         con = connect_db()
         if con is None:
             return None, "Connection to database failed"
@@ -380,7 +380,7 @@ class medecinservices:
 
 
 if __name__ == "__main__":
-    patient_info, error = patientServices.get_patient_details(9)
+    patient_info, error = patientServices.FicheMedicale(9)
     
     if error:
         print(error)
