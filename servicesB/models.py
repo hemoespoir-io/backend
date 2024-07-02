@@ -41,12 +41,13 @@ class patient:
             "AntecedentPere": self.AntecedentPere,
             "TypeDeMaladie": self.TypeDeMaladie
         }
+    
 
 
 @dataclass
 class medicament:
     id_Medicament: int
-    nom: str
+    nom_medicament: str
     Id_Patient: int  
     
 
@@ -54,7 +55,7 @@ class medicament:
     def to_dict(self):
         return {
             "id_Medicament": self.id_Medicament,
-            "nom": self.nom,
+            "nom_medicament": self.nom_medicament,
             " Id_Patient": self. Id_Patient,
            
         }
@@ -65,9 +66,8 @@ class   medecins:
     specialite: str
     Id_Medecin: int  # Renommé de 'IdP' pour correspondre à 'id' de la table
     image: str
-    num_urg: str  # Numéro d'urgence, ajouté pour correspondre à la structure de la table
-    DatePriseEncharge: str  # Formaté en snake_case pour suivre les conventions Python
-
+    numero_urgence: str  # Numéro d'urgence, ajouté pour correspondre à la structure de la table
+    
     # Méthode pour convertir l'instance en dictionnaire, utile pour l'intégration avec des bases de données
     def to_dict(self):
         return {
@@ -76,22 +76,24 @@ class   medecins:
             "specialite": self.specialite,
             "Id_Medecin": self.Id_Medecin,
             "image": self.image,
-            "num_urg": self.num_urg,
-            "DatePriseEncharge": self.DatePriseEncharge
+            "numero_urgence": self.numero_urgence,
         }
 
 
 @dataclass
-class  medecinPatient:
+class medecinPatient:
     medecinId: int  # Correspond à 'medecinId'
     patientId: int  # Correspond à 'patientId'
-
+    DateDePriseEnCharge: int  # Correspond à 'DateDePriseEnCharge'
+    
     # Méthode pour convertir l'instance en dictionnaire, utile pour l'interaction avec des bases de données
     def to_dict(self):
         return {
             "medecinId": self.medecinId,
-            "patientId": self.patientId
+            "patientId": self.patientId,
+            "DateDePriseEnCharge": self.DateDePriseEnCharge # Convertir la date en chaîne de caractères
         }
+
 
 @dataclass
 class  medicamentPatients:
