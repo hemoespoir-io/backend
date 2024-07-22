@@ -1,6 +1,9 @@
-from flask import Flask,request,jsonify,session
-from services import patientServices,MedicamentService,medecinservices
-from models import Patients,Medicament
+from flask import Flask, make_response,request,jsonify,session
+from dal import DAOpatients,DAOmedecin
+from services import  connect_db, patientServices,MedicamentService,medecinservices
+from models import patient,Medicament,medecins
+from flask_cors import CORS
+app = Flask(__name__)
 
 app=Flask(__name__)
 
@@ -8,27 +11,47 @@ app=Flask(__name__)
 #Les routes
 
 #Avoir une page qui sa form method=POST la methode POST
-@app.route('/AddPatients', methods=['POST'])
-def addPatients():
-  patient_data = request.get_json()
-  print(patient_data)
-  patient = Patients(id=0,nomutilisateur=patient_data['nomutilisateur'],Nomcomplet=patient_data['Nomcomplet'],Date_Naissance=patient_data['Date_Naissance'],email=patient_data['email'],num_tel=patient_data['num_tel'],adresse=patient_data['adresse'],mdp=patient_data['mdp'],image=patient_data['image'],GR_S=patient_data['GR_S'],taille=patient_data['taille'],poids=patient_data['poids'],sexe=patient_data['sexe'],antecedant_mere=patient_data['antecedant_mere'],antecedant_pere=patient_data['antecedant_pere'])
-  return patientServices.addPatients(patient)
-  
+
+"""
+@app.route('/add_patient', methods=['POST'])
+def add_patient():
+    patient = request.get_json()  # On suppose que le patient est envoyé au format JSON
+    if not patient:
+        return jsonify({'error': 'No patient data provided'}), 400
+
+    con = connect_db()
+    if con is None:
+        return jsonify({'error': 'Connection to database failed'}), 500
+
+    try:
+        with con.cursor(dictionary=True) as cur:
+            DAOpatients.AjouterPatientbyId(cur, con, patient)
+        con.close()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 
 #Avoir une page qui sa form method=DELETE la methode DELETE
-@app.route('/DeletePatients/<id>',methods=['DELETE'])
-def DeletePatients(id:int):
-  return patientServices.deletePatients(id)
-
+@app.route('/DeletePatients/<int:id>', methods=['DELETE'])
+def DeletePatients(id):
+    result, error = patientServices.deletePatients(id)
+    if error:
+        response = {
+            "status": "error",
+            "message": error
+        }
+        return make_response(jsonify(response), 500)
+    else:
+        response = {
+            "status": "success",
+            "result": result
+        }
+        return make_response(jsonify(response), 200)
 
 #Avoir une page qui sa form method=POST la methode POST
-@app.route('/ModifyPatients',methods=['POST'])
-def ModifyPatients():
-    data = request.get_json()
-    nom = data.get('nomutilisateur')
-    mdp = data.get('mdp')
-    return patientServices.ModifyPatients(nom,mdp)
+
 
 app.secret_key = 'votre_cle_secrete'
 @app.route('/LogIn', methods=['POST'])
@@ -63,7 +86,7 @@ def addMedicament():
   idPatient=data.get('idpatient')
   
   #print(nom,dose,date,time,idPatient)
-  medi=Medicament(id=0,nom=nom,idPatient=idPatient,dose=dose,Date=date,time=time)
+  medi=medicament(id=0,nom=nom,idPatient=idPatient,dose=dose,Date=date,time=time)
   #print(medi)
   #nom:str,dose:int,date:str,time:str,idPatient:int
   
@@ -89,13 +112,31 @@ def Logout():
   return jsonify(patient.to_dict())
 
 
-@app.route('/PasParJourS',methods=['POST'])
+@app.route('/PasParJourS', methods=['POST'])
 def PasParJourS():
-  data=request.get_json()
-  nomutilisateur=data.get('nomutilisateur')
-  #print(patientServices.pasParJours(patientServices.calculate_age(patientServices.patient_age1(nomutilisateur)),patientServices.patient_poid(nomutilisateur)))
-  return patientServices.pasParJours(patientServices.calculate_age(patientServices.patient_age1(nomutilisateur)),patientServices.patient_poid(nomutilisateur))
- 
+    data = request.get_json()
+    nomutilisateur = data.get('nomutilisateur')
+    
+    if not nomutilisateur:
+        return jsonify({'error': 'Username must be provided'}), 400
+    
+    birth_date, error = Service.patient_age1(nomutilisateur)
+    
+    if error or birth_date is None:
+        return jsonify({'error': 'Failed to retrieve birth date'}), 500
+    
+    age = Service.calculate_age(birth_date)
+    
+    if isinstance(age, str) and 'invalid' in age:
+        return jsonify({'error': 'Invalid birth date format'}), 500
+    
+    weight = Service.patient_poid(nomutilisateur)
+    
+    if weight is None:
+        return jsonify({'error': 'Failed to retrieve weight'}), 500
+    
+    steps_per_day = Service.pasParJours(age, weight)
+    
 
 
 @app.route('/checkAge',methods=['POST'])
@@ -168,12 +209,200 @@ def checkPoids():
   #print(is_valid)
   return jsonify({'poids': poids, 'valid': is_valid})
 
-@app.route('/Age',methods=['POST'])
-def Age():
-  data=request.get_json()
-  nom=data.get('nomUti')
-  print(type(patientServices.calculate_age(patientServices.patient_age1(nom))))
-  return jsonify({'age':patientServices.calculate_age(patientServices.patient_age1(nom))})  
 
-if __name__=='__main__':
-  app.run(debug=True)
+app = Flask(__name__)
+
+##################
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/fichemedical', methods=['GET'])
+def get_patient_details():
+    patient_id = request.args.get('patientid')
+    if not patient_id:
+        return jsonify({"error": "Missing patient ID"}), 400
+
+    details, error = patientServices.FicheMedicale(int(patient_id))
+    if error:
+        return jsonify({"error": error}), 500
+
+    return jsonify(details), 200
+@app.route('/patient/<int:patient_id>', methods=['GET'])
+def get_patient(patient_id):
+    
+    patient_data, error = patientServices.get_patient_byID(patient_id)
+    
+    if error:
+        return jsonify({'error': error}), 404
+    return jsonify(patient_data), 200
+@app.route('/patient/<int:patient_id>', methods=['DELETE'])
+def delete_patient(patient_id):
+    result, error = patientServices.deletePatients(patient_id)
+    
+    if error:
+        return jsonify({'error': error}), 500
+    return jsonify(result), 200
+@app.route('/patient/logout', methods=['POST'])
+def log_out():
+    data = request.json
+    if not data or 'gmail' not in data or 'mdp' not in data:
+        return jsonify({'error': 'Email and password must be provided'}), 400
+    
+    gmail = data['gmail']
+    mdp = data['mdp']
+    
+    patient, error = patientServices.LogOut_by_Email_Password(gmail, mdp)
+    
+    if error:
+        return jsonify({'error': error}), 404
+    return jsonify({
+       
+        # Ajoutez ici tous les autres champs de votre modèle Patients
+    }), 200
+@app.route('/ModifyPatients', methods=['POST'])
+def modify_patients():
+    data = request.get_json()
+    nom = data.get('nomutilisateur')
+    mdp = data.get('mdp')
+    
+    if not nom or not mdp:
+        return jsonify({'error': 'Username and password must be provided'}), 400
+    
+    success, error = patientServices.ModifierPatientByPassword(nom, mdp)
+    
+    if error:
+        return jsonify({'error': error}), 500
+    return jsonify({'message': 'Patient modified successfully'}), 200
+   
+patients = [
+    patient(11, "qasminabil", "nabil qasmi", "2002-08-15", "nabil.qasmi@gmail.com", "06 ** ** ** **", 
+            "medecin ghassani dr hanane benchekroune", "nabil123", "lien ou données de l'image", 
+            "A++", 1.80, 70, "H", "oui", "oui", "hemophelie A")
+   
+]
+
+
+
+@app.route('/get_patient_age', methods=['GET'])
+def get_patient_age():
+    date_naissance = request.args.get('DateNaissance')
+    if not date_naissance:
+        return jsonify({"error": "Parameter 'DateNaissance' is required"}), 400
+    
+    age, error = patientServices.patient_age2(date_naissance)
+    if error:
+        return jsonify({"error": error}), 500
+    
+    return jsonify({"age": age}), 200
+
+@app.route('/get_patient_poid', methods=['GET'])
+def get_patient_poid():
+    patient_id = request.args.get('id')
+    if not patient_id:
+        return jsonify({"error": "Parameter 'id' is required"}), 400
+
+    try:
+        patient_id = int(patient_id)
+    except ValueError:
+        return jsonify({"error": "Parameter 'id' must be an integer"}), 400
+    
+    poid, error = patientServices.patient_poid(patient_id)
+    if error:
+        return jsonify({"error": error}), 500
+
+    return jsonify({"poid": poid}), 200
+
+
+@app.route('/addPatient', methods=['POST'])
+def add_patient():
+    data = request.json
+    required_fields = [
+        "NomUtilisateur", "Nomcomplet", "DateNaissance", "Email",
+        "Telephone", "Adresse", "Motdepasse", "Groupesanguin", "Taille",
+        "Poids", "Sexe", "AntecedentMere", "AntecedentPere", "TypeDeMaladie"
+    ]
+    missing_fields = [field for field in required_fields if field not in data]
+    if missing_fields:
+        return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
+
+    try:
+        new_patient = patient(
+            Id_Patient=121,
+            NomUtilisateur=data['NomUtilisateur'],
+            Nomcomplet=data['Nomcomplet'],
+            DateNaissance=data['DateNaissance'],
+            Email=data['Email'],
+            Telephone=data['Telephone'],
+            Adresse=data['Adresse'],
+            Motdepasse=data['Motdepasse'],
+            image=data.get('image'),  # This can be None if not provided
+            Groupesanguin=data['Groupesanguin'],
+            Taille=data['Taille'],
+            Poids=data['Poids'],
+            Sexe=data['Sexe'],
+            AntecedentMere=data['AntecedentMere'],
+            AntecedentPere=data['AntecedentPere'],
+            TypeDeMaladie=data['TypeDeMaladie']
+        )
+
+        patient_info, error = patientServices.addPatients(new_patient)
+        if error:
+            return jsonify({"error": error}), 400
+        else:
+            return jsonify({"patient": patient_info.__dict__}), 201
+    except KeyError as e:
+        return jsonify({"error": f"Missing required field: {str(e)}"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+@app.route('/addMedecin', methods=['POST'])
+def add_medecin():
+        data = request.get_json()
+        medecin_nom = data.get('nom')
+        medecin_spe = data.get('spe')
+        medecin_id = data.get('id')
+        medecin_image = data.get('image')
+        medecin_numero_urgence = data.get('numero_urgence')
+
+        result, message = medecinservices.addMedecins(medecin_nom, medecin_spe, medecin_id, medecin_image, medecin_numero_urgence)
+    
+        if result:
+            return jsonify({'success': True, 'message': message}), 200
+        else:
+            return jsonify({'success': False, 'message': message}), 400
+app = Flask(__name__)
+@app.route('/deleteMedecin', methods=['DELETE'])
+def delete_medecin():
+    medecin_id = request.json.get('id')
+    if not medecin_id:
+        return jsonify({"error": "Medecin ID is required"}), 400
+
+    result, message = DAOmedecin.deletemed(medecin_id)
+    if result is None:
+        return jsonify({"error": message}), 500
+    return jsonify({"message": message}), 200"""
+CORS(app)  # Permettre CORS pour toutes les routes
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+    conn = connect_db()
+    if not conn:
+        return jsonify({"error": "Échec de la connexion à la base de données."}), 500
+
+    cur = conn.cursor()
+    patient_info, error = patientServices.logIn(cur, username, password)
+    cur.close()
+    conn.close()
+
+    if error:
+        return jsonify({"error": error}), 401
+    elif patient_info:
+        return jsonify({"patient": patient_info.__dict__}), 200
+    else:
+        return jsonify({"error": "Identifiants invalides"}), 401
+
+if __name__ == '__main__':
+    app.run(debug=True)

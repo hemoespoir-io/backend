@@ -1,60 +1,146 @@
 from dal import DAOpatients, DAOmedicament, DAOmedecin
-from models import Patients, Medicament, medecin
+from models import patient, Medicament, medecins, medicamentPatients
 from datetime import datetime
-from test import decision
 import matplotlib.pyplot as plt
+from dataclasses import dataclass
+from datetime import datetime, date
+from typing import List
+import mysql.connector as mysql
+from models import patient, Medicament, medecins, medicamentPatients, medecinPatient
+from datetime import datetime
+from dal import DAOpatients
+from datetime import datetime
 
-class PatientService:
-    @staticmethod
-    def get_patient_by_username(username):
-        # Implementation to fetch patient
-        pass
 
-    @staticmethod
-    def calculate_age(birth_date):
-        # Implementation to calculate age
-        pass
-
-    @staticmethod
-    def fiche_medicale(username):
-        patient = PatientService.get_patient_by_username(username)
-        if not patient:
-            return "Patient not found"
-        age = PatientService.calculate_age(patient.dob)
-        medications = MedicamentService.get_all_medicaments_for_patient(patient.id)
-        medical_record = f"Fiche Médicale pour {patient.full_name}\n{'='*30}\n"
-        medical_record += f"Age: {age} ans\nPoids: {patient.weight} kg\nGroupesanguin: {patient.blood_group}\n\nListe des Médicaments:\n{'-'*30}\n"
-        for med in medications:
-            medical_record += f"Nom: {med.nom}\nDose recommandée: {med.dose_recommandee}\nDernière date de prise: {med.dernier_date_de_prise}\nHeure de la dernière prise: {med.time}\n{'-'*30}\n"
-        return medical_record
+def connect_db():
+    try:
+        con = mysql.connect(
+            host="34.122.67.28",
+            user='root',
+            passwd='nabil123!',
+            database='pfe',
+            port='3306',
+            charset="utf8mb4"
+        )
+        return con
+    except mysql.Error as e:
+        print(f"Error connecting to MySQL database: {e}")
+        return None
 
 class patientServices:
+    @staticmethod
+    def FicheMedicale(patient_id):#
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
 
+        with con.cursor(dictionary=True) as cur:
+            patient = DAOpatients.fetch_patient_info_by_Id(cur, patient_id)
+            if not patient:
+                con.close()
+                return None, "No patient found with Id_Patient = " + str(patient_id)
+        
+            patient_info = {
+                "patient": patient,
+                "medicament": DAOpatients.fetch_medicaments_details_by_patient_id(cur, patient_id),
+                "medecins": DAOpatients.fetch_medecins_details_by_patient_id(cur, patient_id)
+            }
+
+        con.close()
+        return patient_info, None
+    
+    @staticmethod
+    def get_patient_byID(patient_id):#
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
+        
+        try:
+            print(f"Recherche du patient avec l'ID : {patient_id}")  # Déclaration de débogage
+            with con.cursor(dictionary=True) as cur:
+                query = "SELECT * FROM patient WHERE Id_Patient = %s"
+                cur.execute(query, (patient_id,))
+                patient_data = cur.fetchone()
+            
+            con.close()
+
+            if patient_data is None:
+                print("Aucune donnée de patient trouvée.")  # Déclaration de débogage
+                return None, "Aucun patient trouvé"
+            print(f"Données du patient trouvées : {patient_data}")  # Déclaration de débogage
+            return patient_data, None
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}")  # Déclaration de débogage
+            return None, str(e)
+    
 
     @staticmethod
-    def addPatients(patients: Patients):
-        return DAOpatients.newPatients(patients)
-    
+    def addPatients(patient):
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
+        
+        try:
+            with con.cursor(dictionary=True) as cur:
+                DAOpatients.AjouterPatientbyId(cur, con, patient)
+            con.close()
+            return patient, None
+        except Exception as e:
+            print(f"Exception: {e}")
+            if con:
+                con.close()
+            return None, str(e)
     @staticmethod
-    def deletePatients(id: int):
-        return DAOpatients.deletePatient(id)
-    
+    def deletePatients(id):
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
+        
+        try:
+            with con.cursor(dictionary=True) as cur:
+                DAOpatients.SupprimerPatientbyId(cur, con, id)
+            return {"result": "success"}, None
+        except Exception as e:
+            return None, str(e)
+        finally:
+            con.close()
     @staticmethod
-    def LogIn(nom: str, mdp: str):
-        result = DAOpatients.logIn(nom, mdp)
-        patient = Patients(result[0][0], result[0][1], result[0][2], result[0][3], result[0][4], result[0][5], result[0][6], result[0][7], result[0][8], result[0][9], result[0][10], result[0][11], result[0][12], result[0][13], result[0][14])
-        return patient
-    
-    @staticmethod 
-    def ModifyPatients(nom: str, mdp: str):
-        return DAOpatients.updatePatient(nom, mdp)
-    
-    @staticmethod
-    def patient_age1(nom: str):
-        result = DAOpatients.patient_age1(nom)
-        date_naissance = result
-        return date_naissance
+    def ModifierPatientByPassword(nom: str, mdp: str):
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
+        
+        try:
+            with con.cursor() as cur:
+                DAOpatients.ModifierPatientBymdp(cur, con, nom, mdp)
+            return True, None
+        except Exception as e:
+            return None, str(e)
+        finally:
+            con.close()
 
+    @staticmethod
+    def patient_age1(date_naissance: str):
+        from datetime import datetime
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
+        
+        with con.cursor(dictionary=True) as cur:
+            try:
+                # Recherche par DateNaissance
+                cur.execute("SELECT DateNaissance FROM patient WHERE DateNaissance=%s", (date_naissance,))
+                result = cur.fetchone()
+                con.close()
+                if result:
+                    # Calculer l'âge à partir de la date de naissance
+                    birth_date = datetime.strptime(result['DateNaissance'], '%Y-%m-%d')
+                    age = (datetime.now() - birth_date).days // 365
+                    return age, None
+                return None, "Patient not found"
+            except Exception as e:
+                con.close()
+                return None, str(e)
     @staticmethod
     def pasParJours(age, weight):
         dict = {}
@@ -102,62 +188,151 @@ class patientServices:
                 JoursPasPatient = pas_jour
 
             if int(weight) > 90 and int(weight) < 100:
-                JoursPasPatient = [int(steps * 0.5) for steps in JoursPasPatient] 
+                JoursPasPatient = [int(steps * 0.5) for steps in JoursPasPatient]
 
         for i, j in zip(JoursPatient, JoursPasPatient):
             dict[i] = j
         return dict
-    
+
     @staticmethod
     def checkAge(age: int):
         if age <= 3 or age >= 101:
             return False
         return True
-        
+
     @staticmethod
     def checkPoids(poids: int):
         if int(poids) == 0:
             return False
         return True
-    
     @staticmethod
-    def calculate_age(birth_date):
-        if isinstance(birth_date, str):
-            birth_date = datetime.strptime(birth_date, '%Y-%m-%d')
-        today = datetime.today()
-        return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-    
+    def logIn(cur, username, password):
+        try:
+            print(f"Tentative de connexion pour l'utilisateur: {username}")
+            result = DAOpatients.logIn(cur, username, password)
+            print(f"Résultat de la requête: {result}")
+            if result:
+                patient_data = result[0]
+                patient_obj = patient(
+                    patient_data[0], patient_data[1], patient_data[2], patient_data[3],
+                    patient_data[4], patient_data[5], patient_data[6], patient_data[7],
+                    patient_data[8], patient_data[9], patient_data[10], patient_data[11],
+                    patient_data[12], patient_data[13], patient_data[14],patient_data[15]
+                )
+                return patient_obj, None
+            else:
+                return None, "Identifiants invalides"
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None, str(e)
     @staticmethod
-    def LogOut(gmail: str, mdp: str):
-        result = DAOpatients.logOut(gmail, mdp)
-        patient = Patients(result[0][0], result[0][1], result[0][2], result[0][3], result[0][4], result[0][5], result[0][6], result[0][7], result[0][8], result[0][9], result[0][10], result[0][11], result[0][12], result[0][13], result[0][14])
-        return patient
-
-    @staticmethod
-    def patient_age2(DateNaissance: str):
-        result = DAOpatients.patient_age2(DateNaissance)
-        return result
-
-    @staticmethod
-    def DecisinoPatient(id: int):
-        return decision(id)
-    
-    @staticmethod 
-    def search(id: int):
-        return DAOpatients.search(id)
-    
-    @staticmethod
-    def lastPatient():
-        result = DAOpatients.lastPatient()
-        patient = Patients(result[0][0], result[0][1], result[0][2], result[0][3], result[0][4], result[0][5], result[0][6], result[0][7], result[0][8], result[0][9], result[0][10], result[0][11], result[0][12], result[0][13], result[0][14])
-        return patient
-    
-    @staticmethod
-    def patient_poid(nom: str):
-        result = DAOpatients.patient_poid(nom)
-        for i in result:
-            return i[0]
+    def LogOut_by_Email_Password(gmail: str, mdp: str):
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
         
+        try:
+            with con.cursor() as cur:  # Removed dictionary=True since psycopg2 does not support it
+                result = DAOpatients.logOutByEmail_Passowrd(cur, gmail, mdp)
+                if result:
+                    patient_data = result[0]
+                    patient = patient(
+                        patient_data[0], patient_data[1], patient_data[2], patient_data[3],
+                        patient_data[4], patient_data[5], patient_data[6], patient_data[7],
+                        patient_data[8], patient_data[9], patient_data[10], patient_data[11],
+                        patient_data[12], patient_data[13], patient_data[14]
+                    )
+                    return patient, None
+                else:
+                    return None, "No patient found with provided email and password"
+        except Exception as e:
+            return None, str(e)
+        finally:
+            con.close()
+
+    @staticmethod
+       
+    def patient_age2(DateNaissance: str):
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
+        
+        with con.cursor(dictionary=True) as cur:
+            result = DAOpatients.Get_Age_by_Date_Naissance(cur, DateNaissance)
+            if result:
+                # Directement utiliser result comme objet datetime.date
+                birth_date = result
+                age = (datetime.now().date() - birth_date).days // 365
+                con.close()
+                return age, None
+            con.close()
+            return None, "Patient not found"
+    @staticmethod
+    def patient_poid(id: int):
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
+        
+        with con.cursor(dictionary=True) as cur:
+            result = DAOpatients.patient_poid_by_Id(cur, id)
+            if result:
+                con.close()
+                return result[0]['Poids']  # Assuming 'Poids' is the column name
+            con.close()
+            return None, "Patient not found"
+@staticmethod
+def DecisinoPatient(id: int):
+        return decision(id)
+
+@staticmethod
+def Rechercher_by_Id(id: int):
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
+        
+        with con.cursor(dictionary=True) as cur:
+            result = DAOpatients.search_by_Id(cur, id)
+            con.close()
+            return result
+
+@staticmethod
+def lastPatient_byID():
+    con = connect_db()
+    if con is None:
+        return None, "Connection to database failed"
+    
+    try:
+        with con.cursor(dictionary=True) as cur:
+            result = DAOpatients.lastPatient_Id(cur)
+            if result:
+                patient_data = result[0]
+                patient = patient(
+                    patient_data['Id_Patient'], 
+                    patient_data[' Nabil Example  '], 
+                    patient_data['field2'], 
+                    patient_data['field3'], 
+                    patient_data['field4'], 
+                    patient_data['field5'], 
+                    patient_data['field6'], 
+                    patient_data['field7'], 
+                    patient_data['field8'], 
+                    patient_data['field9'], 
+                    patient_data['field10'], 
+                    patient_data['field11'], 
+                    patient_data['field12'], 
+                    patient_data['field13'], 
+                    patient_data['field14']
+                )
+                return patient, None
+            return None, "No patient found"
+    except Exception as e:
+        return None, str(e)
+    finally:
+        if con:
+            con.close()
+
+
+    
     @staticmethod
     def generate_steps_plot(age, weight):
         steps_data = patientServices.pasParJours(age, weight)
@@ -182,113 +357,299 @@ class patientServices:
             plt.tight_layout()
         plt.show()
 
-    @staticmethod
-    def fiche_medicale(nom: str):
-        age = patientServices.calculate_age(patientServices.patient_age1(nom))
-        weight = patientServices.patient_poid(nom)
-        medications = MedicamentService.allMedicament(nom)  # Assuming `nom` is used to fetch medications
-
-        # Constructing the medical record
-        medical_record = f"Fiche Médicale pour {nom}\n"
-        medical_record += f"{'='*30}\n"
-        medical_record += f"Age: {age} ans\n"
-        medical_record += f"Poids: {weight} kg\n"
-        medical_record += f"Type de maladie: hemophelei \n"  # Placeholder
-        medical_record += f"recomandation: prise de kogenate chaque 8 heures en cas d urgnece\n"  # Placeholder
-        medical_record += f"Contact d'urgence: 06*-***-****\n"  # Placeholder for emergency contact
-        medical_record += f"dose de medicaments: 1500UI\n"  # Placeholder for emergency contact
-        medical_record += f"derniere date de prise: ******\n"  # Placeholder for emergency contact
-        medical_record += f"Contact  medecin de suivie : 06*-***-****\n"  # Placeholder for emergency contact
-        medical_record += f"groupe sanguin: ***\n"  # Placeholder for emergency contact
-        medical_record += f"\nMédicaments:\n"
-        medical_record += f"{'-'*30}\n"
-        for med in medications:
-            medical_record += f"Nom: {med.nom}\n"
-            medical_record += f"Dose: {med.dose}\n"
-            medical_record += f"Date: {med.date}\n"
-            medical_record += f"Heure: {med.time}\n"
-            medical_record += f"{'-'*30}\n"
-        
-        return medical_record
-
-
 class MedicamentService:
     @staticmethod
-    def ajouterMedicament(medi: Medicament):
-        return DAOmedicament.newMedicament(medi)
-       
-    @staticmethod
-    def deletemedicament(medi: Medicament):
-        return DAOmedicament.deletemedicament(medi)   
-    
-    @staticmethod
-    def searchMed(nom: str, idPatient: int):
-        result = DAOmedicament.search(nom, idPatient)
-        med = Medicament(result[0][0], result[0][1], result[0][2], result[0][3], result[0][4], result[0][5])
-        return med 
+    def Medicament_details_ID(id_patient: int):
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
+        
+        allmedicaments = []
+        with con.cursor(dictionary=True) as cur:
+            result = DAOmedicament.Medicament_details_byID(cur, id_patient)
+            for i in result:
+                med = Medicament(*i)
+                allmedicaments.append(med)
+        con.close()
+        return allmedicaments
 
     @staticmethod
-    def allMedicament(id: int):
-        allmedicaments = []
-        result = DAOmedicament.allMedicament(id)
-        for i in result:
-            med = Medicament(i[0], i[1], i[2], i[3], i[4], i[5])
-            allmedicaments.append(med)
-        return allmedicaments
+    def ajouterMedicament(medi):
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
+    
+        try:
+            with con.cursor(dictionary=True) as cur:
+                DAOmedicament.Ajouter_Medicament(cur, con, medi)
+                return "Medicament added successfully", None
+        except Exception as e:
+            return None, str(e)
+        finally:
+            if con:
+                con.close()
+
+    @staticmethod
+    def deletemedicament_by_Id(medi):
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
+        
+        with con.cursor(dictionary=True) as cur:
+            DAOmedicament.deletemedicament_by_Id(cur, con, medi)
+        con.close()
+
+    @staticmethod
+    def searchMedicament_by_Id(nom: str, idPatient: int):
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
+        
+        try:
+            with con.cursor(dictionary=True) as cur:
+                result = DAOmedicament.search_Medicament_by_Id(cur, nom, idPatient)
+                if result:
+                    med = Medicament(result[0]['id_Medicament'], result[0][' nom_medicament'], result[0]['Id_Patient'])
+                    return med, None
+                return None, "No medicament found"
+        except Exception as e:
+            return None, f"Error fetching medicament: {e}"
+        finally:
+            con.close()
     
 
 class medecinservices:
     @staticmethod
-    def addmedecins(nom: str, spe: str, id: int, image: str):
-        return DAOmedecin.newMeddin(nom, spe, id, image)
-
-    @staticmethod
-    def deletemed(nom: str):
-        return DAOmedecin.deletemedecin(nom)
+    def addMedecins(nom: str, spe: str, id: int, image: str, numero_urgence: str):
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
     
+        try:
+            with con.cursor(dictionary=True) as cur:
+                DAOmedecin.Ajouter_medecin(cur, con, nom, spe, id, image)
+            con.close()
+            return True, "Médecin ajouté avec succès"
+        except Exception as e:
+            return None, f"Une erreur est survenue : {str(e)}"
+    @staticmethod
+    def deletemed(id: int):
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
+        
+        with con.cursor(dictionary=True) as cur:
+            DAOmedecin.deletemed(cur, con, id)
+        con.close()
+
     @staticmethod
     def searchmedecin(id: int):
+        con = connect_db()
+        if con is None:
+            return None, "Connection to database failed"
+        
         allmedecin = []
-        result = DAOmedecin.getall(id)
-        for i in result:
-            Med = medecin(i[0], i[1], i[3], i[2])
-            allmedecin.append(Med)
+        with con.cursor(dictionary=True) as cur:
+            result = DAOmedecin.medecin_detail_by_Id(cur, id)
+            for i in result:
+                Med = medecins(i[0], i[1], i[3], i[2],i[3])
+                allmedecin.append(Med)
+        con.close()
         return allmedecin
     
+
 if __name__ == "__main__":
-    # Example usage of fiche_medicale
-    print(patientServices.fiche_medicale("q"))
+    Id_Medecin = 1
+
+    result, error = medecinservices.searchmedecin(Id_Medecin)
+    if error:
+        print(f"Error: {error}")
+    else:
+        for med in result:
+            print(f"Result: {med.to_dict()}")
+
+    # Establish database connection
+       # Define test parameters
+    medecin_id = 123
+
+    # Establish database connection
+    con = connect_db()
+    if con:
+        with con.cursor(dictionary=True) as cur:
+            # Check and create table if it does not exist
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS medecins (
+                    Id_Medecin INT PRIMARY KEY,
+                    nom VARCHAR(255),
+                    specialite VARCHAR(255),
+                    image VARCHAR(255),
+                    numero_urgence VARCHAR(255)
+                )
+            """)
+            con.commit()
+            
+            # Delete any existing test record
+            cur.execute("DELETE FROM medecins WHERE Id_Medecin = %s", (medecin_id,))
+            con.commit()
+            
+            # Insert a test record to delete later
+            cur.execute("INSERT INTO medecins (Id_Medecin, nom, specialite, image, numero_urgence) VALUES (%s, %s, %s, %s, %s)", 
+                        (medecin_id, 'Dupont', 'Cardiologie', 'image_path.jpg', '123456789'))
+            con.commit()
+        
+        # Run the test
+        result, message = DAOmedecin.deletemed(con, medecin_id)
+        if result is None:
+            print(f"Test failed: {message}")
+        else:
+            print("Test passed: Medecin deleted successfully")
+
+        # Verify the record was deleted
+        with con.cursor(dictionary=True) as cur:
+            cur.execute("SELECT * FROM medecins WHERE Id_Medecin = %s", (medecin_id,))
+            record = cur.fetchone()
+            if record is None:
+                print("Verification passed: Medecin record deleted from database")
+            else:
+                print("Verification failed: Medecin record still exists in database")
+
+        con.close()
+    else:
+        print("Connection to database failed")
+        ######################
+    """medecin_nom = "Dr. saraqasmi"
+    medecin_spe = "Cardiology"
+    medecin_id = 11
+    medecin_image = "image_path.jpg"
+    medecin_numero_urgence="numero_urgence"
 
 
+    # Run the test
+    result, message = medecinservices.addMedecins(medecin_nom, medecin_spe, medecin_id, medecin_image,medecin_numero_urgence)
+    if result is None:
+        print(f"Test failed: {message}")
+    else:
+        print("Test passed: Medecin added successfully")"""
+    #les test Patient
+    """ new_patient = patient(
+        Id_Patient=12222,
+        NomUtilisateur="nabil123",
+        Nomcomplet="Nabil Example",
+        DateNaissance="1990-01-01",
+        Email="nabil@example.com",
+        Telephone="1234567890",
+        Adresse="123 Main St",
+        Motdepasse="password123",
+        image=None,
+        Groupesanguin="O+",
+        Taille="180cm",
+        Poids="75kg",
+        Sexe="M",
+        AntecedentMere="Diabetes",
+        AntecedentPere="Hypertension",
+        TypeDeMaladie="Hemophilia"
+    )
+    patient_info, error = patientServices.addPatients(new_patient)
+    if error:
+        print("Erreur :", error)
+    else:
+        print("Patient ajouté avec succès :", patient_info.__dict__)"""
+    """conn = connect_db()
+    if not conn:
+        print("Échec de la connexion à la base de données.")
+    else:
+        cur = conn.cursor()
+
+        username = "nabil123"
+        password = "password123"
+
+        patient, error = patientServices.logIn(cur, username, password)
+        if error:
+            print(f"Erreur : {error}")
+        elif patient:
+            print(f"Connexion réussie pour le patient : {patient.data}")
+        else:
+            print("Échec de connexion : Identifiants invalides")
+
+        cur.close()
+        conn.close()
+    """
+    """medicament_a_chercher = "hemophil"
+    id_patient = 1
+
+    result, error = MedicamentService.searchMedicament_by_Id(medicament_a_chercher, id_patient)
+    if error:
+        print(f"Error: {error}")
+    else:
+        print(f"Result: {result.to_dict()}")"""
+    """patient, error = lastPatient_byID()
+    if error:
+        print(f"Error: {error}")
+    else:
+        print(f"Last patient: {patient}")"""
+    """patient_id = 1  # Remplacez par l'ID du patient que vous souhaitez rechercher
+
+    result = patientServices.get_patient_byID(patient_id)
+
+    if result is None:
+        print("Erreur : La fonction a retourné None")
+    else:
+        patient_data, error = result
+        if error:
+            print(f"Erreur : {error}")
+        else:
+            print(f"Données du patient : {patient_data}")
+"""
     
-    #if __name__=="__main__":
-    """patient=Patients(1,"nabil","kella","10/04/2003","nabil.kella@gmail.com","0000000","image.jpg","A",1.80,77,"Homme","adresse","000","oui","non")
-    patientServices.addPatients(patient)
-    patientServices.deletePatients(1)
-    patientServices.ModifyPatients(patients.nom,"000")
-    print(patientServices.LogIn(patient.nom,patient.mdp))
-    print(patientServices.DecisinoPatient(1))
-    MedicamentService.ajouterMedicament(nom,dose,date,time,idPatient)
-    MedicamentService.ajouterMedicament("nom4",80,"2021-01-02","10:00:00",65)
-    MedicamentService.ajouterMedicament(medicament)
-    print(patientServices.LogOut("Email","123"))
-    print(patientServices.checkAge(patientServices.calculate_age(patientServices.patient_age("2003-04-10"))))
-    patientServices.pasParJours(patientServices.calculate_age(patientServices.patient_age(nomutilisateur)))
-    print(patientServices.pasParJours(patientServices.calculate_age(patientServices.patient_age1("oth123"))))
-    print(patientServices.checkAge(patientServices.calculate_age("2020-05-28")))
-    print(patientServices.DecisinoPatient(23))
-    print(patientServices.lastPatient())
-    print(MedicamentService.allMedicament(63))
-    print(MedicamentService.searchMed('nom1',65))"""
-    #medicament2=Medicament(0,"nom2",65,130,"2024-01-04","10")
-    #DAOmedicament.newMedicament(medicament1)
-    #MedicamentService.ajouterMedicament(medicament2)
+    """gmail = "nabil.qasmi1@gmail.com"
+    mdp = "nabil123"
 
-    #poids=patientServices.patient_poid("q")
-    #age=patientServices.calculate_age(patientServices.patient_age1("q"))
-    #patientServices.generate_steps_plot(age,poids)
-    #print(poids,age)
-    #print(patientServices.pasParJours(14,19))
-    #print(patientServices.checkPoids(patientServices.patient_poid("aze")))
-    #medecinservices.addmedecins("nom","spe",91,"image")
-    #print(medecinservices.searchmedecin(91))
+    patient, error = patientServices.LogOut_by_Email_Password(gmail, mdp)
+    if error:
+        print(f"Erreur : {error}")
+    elif patient:
+        print(f"Déconnexion réussie pour le patient : {patient}")
+    else:
+        print("Déconnexion échouée : Email ou mot de passe incorrect")"""
+    """nom_utilisateur = "exempleNomUtilisateur"
+    nouveau_mdp = "nouveauMotDePasse"
+
+    success, error = patientServices.ModifierPatientByPassword(nom_utilisateur, nouveau_mdp)
+    if error:
+        print(f"Erreur : {error}")
+    elif success:
+        print("modifié avec succès")
+    else:
+        print("Modification  échouée")
+    """
+    
+    
+    """conn = connect_db()
+    if not conn:
+        print("Échec de la connexion à la base de données.")
+    else:
+        cur = conn.cursor()
+
+        username = "exempleNomUtilisateur"
+        password = "exempleMotDePasse"
+
+        patient, error = patientServices.logIn(cur, username, password)
+        if error:
+            print(f"Erreur : {error}")
+        elif patient:
+            print(f"Connexion réussie pour le patient : {patient}")
+        else:
+            print("Échec de connexion : Identifiants invalides")
+
+        cur.close()
+        conn.close()
+    
+    """""""""""
+    """ patient_info, error = patientServices.addPatients(patient)
+    print("patient ajouter par succes:",patient_info)
+    print("Erreur :", error)
+    """
+""" patient_info, error = patientServices.FicheMedicale(9)
+    print("Informations du patient :", patient_info)
+    print("Erreur :", error)"""
+  

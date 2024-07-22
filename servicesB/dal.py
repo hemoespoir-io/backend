@@ -1,160 +1,172 @@
 import mysql.connector as mysql
-from models import Patients , Medicament
-con=mysql.connect(
-    host="34.122.67.28",
-    user='root',
-    passwd='nabil123!',
-    database='hemophelie',
-    port='3306',
-    charset="utf8mb4"
-  )
-cur=con.cursor()
+from mysql.connector import Error
+#from Analyse_de_donnes.testt import Medicament
+from models import patient, Medicament,medecins,medicamentPatients,medecinPatient
 
 
 class DAOpatients:
-
     @staticmethod
-    def newPatients(patient:Patients):
-        cur.execute('INSERT INTO Patient (NomUtilisateur, Nomcomplet, DateNaissance, Email, Telephone, Adresse, Motedepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedeantMere, AntecedeantPere) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
-                    (patient.nomutilisateur,patient.Nomcomplet,patient.Date_Naissance,patient.email,patient.num_tel,patient.adresse,patient.mdp,patient.image,patient.GR_S,patient.taille,patient.poids,patient.sexe,patient.antecedant_mere,patient.antecedant_pere))
-        con.commit()
-    
-    @staticmethod
-    def deletePatient(id:int):
-        cur.execute("DELETE FROM Patient where Id=%s",(id,))
-        con.commit()
-
-
-    @staticmethod
-    def updatePatient(NomUtilisateur:str,mdp:str):
-        cur.execute("UPDATE Patients SET mdp=%s WHERE NomUtilisateur=%s", ( mdp ,NomUtilisateur,))
+    def AjouterPatientbyId(cur, con, patient):
+        cur.execute('INSERT INTO patient (Id_Patient, NomUtilisateur, Nomcomplet, DateNaissance, Email, Telephone, Adresse, Motdepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedentMere, AntecedentPere, TypeDeMaladie) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                    (patient.Id_Patient, patient.NomUtilisateur, patient.Nomcomplet, patient.DateNaissance, patient.Email, patient.Telephone, patient.Adresse, patient.Motdepasse, patient.image, patient.Groupesanguin, patient.Taille, patient.Poids, patient.Sexe, patient.AntecedentMere, patient.AntecedentPere, patient.TypeDeMaladie))
         con.commit()
 
     @staticmethod
-    def patient_poid(nom: str):
-        cur.execute("SELECT Poids FROM Patient where NomUtilisateur=%s", (nom,))
+     
+    def SupprimerPatientbyId(cur, con, id):
+        try:
+            # Démarrer une transaction
+            cur.execute("START TRANSACTION;")
+            
+            # Supprimer d'abord de la table medecinPatient
+            cur.execute("""
+                DELETE medecinPatient 
+                FROM medecinPatient 
+                JOIN patient ON medecinPatient.patientId = patient.Id_Patient
+                WHERE patient.Id_Patient = %s
+            """, (id,))
+            
+            # Ensuite, supprimer de la table patient
+            cur.execute("DELETE FROM patient WHERE Id_Patient = %s;", (id,))
+            
+            # Valider la transaction
+            con.commit()
+        except Exception as e:
+            # En cas d'erreur, annuler la transaction
+            con.rollback()
+            raise e
+    @staticmethod
+    def ModifierPatientBymdp(cur, con, NomUtilisateur: str, mdp: str):
+        cur.execute("UPDATE patient SET Motdepasse = %s WHERE NomUtilisateur = %s", (mdp, NomUtilisateur))
+        con.commit()
+
+    @staticmethod
+    def patient_poid_by_Id(cur, id: int):
+        cur.execute("SELECT Poids FROM patient WHERE Id_Patient=%s", (id,))
+        result = cur.fetchall()
+        if result:
+            return result[0]
+        else:
+            return None
+    @staticmethod
+    def logIn(cur, username, password):
+        query = "SELECT * FROM patient WHERE NomUtilisateur = %s AND Motdepasse = %s"
+        cur.execute(query, (username, password))
+        return cur.fetchall()
+
+
+    @staticmethod
+    def logOutByEmail_Passowrd(cur, gmail: str, mdp: str):
+        query = "SELECT * FROM patient WHERE Email=%s AND Motdepasse=%s"
+        cur.execute(query, (gmail, mdp))
         result = cur.fetchall()
         return result
 
-    @classmethod
-    def logIn(cls, username: str, password: str):
-        cursor = cls.db.cursor(dictionary=True)  # Create a cursor directly from the class-level db connection
-        query = "SELECT * FROM Patient WHERE NomUtilisateur = %s AND Motedepasse = %s"
-        cursor.execute(query, (username, password))
-        result = cursor.fetchall()
-        cursor.close()  # Good practice to close cursor after usage
-        return result
-
-        # Usage:
-        db = PatientDatabase(host='hostname', user='username', password='yourpassword', database='yourdatabase')
-        user_info = db.logIn('user', 'password')
-        print(user_info)
-
-    #print(DAOpatients.logOut("123","Email"))
-    @staticmethod 
-    def logOut(gmail:str,mdp:str):
-        cur.execute("select * from Patient where Email=%s and Motedepasse=%s",(gmail,mdp,))  
-        result=cur.fetchall() 
-        return result
-
-
     @staticmethod
-    def search(id:int):
-        cur.execute("select * from Patient where id=%s",(id,))
-        result=cur.fetchall()  
-        return result
-    
-
-    @staticmethod
-    def patient_age1(NomUtilisateur : str):
-        cur.execute("SELECT DateNaissance FROM Patient where NomUtilisateur=%s",(NomUtilisateur,))
+    def search_by_Id(cur, id: int):
+        cur.execute("SELECT * FROM patient WHERE Id_Patient=%s", (id,))
         result = cur.fetchall()
-        return result[0][0]
-    
+        return result
     @staticmethod
-    def patient_age2(dataNaissance : str):
-        cur.execute("SELECT DateNaissance FROM Patient where DateNaissance=%s",(dataNaissance,))
+    def get_patient_by_Id(cur, Id_patient: int):
+        query = "SELECT * FROM patient WHERE Id_Patient = %s"
+        cur.execute(query, (Id_patient,))
         result = cur.fetchall()
-        return result[0][0]
-    
-    @staticmethod
-    def lastPatient():
-        cur.execute("SELECT * FROM Patient ORDER BY id DESC LIMIT 1")
-        result=cur.fetchall()
         return result
     
-class DAOmedicament:   
-
-    """
-                nom: str
-                idPatient:int
-                dose: int
-                Date: str
-                time:str
-    """
-
-    """
-        MedicamentService.ajouterMedicament(nom,dose,date,time,idPatient)
-        def ajouterMedicament(nom:str,dose:int,date:str,time:str,idPatient:int)
-    """
 
     @staticmethod
-    def newMedicament(medicament:Medicament):
-        cur.execute('INSERT INTO medicament (nom , Id ,dose, Date, time)VALUES (%s,%s,%s,%s,%s)',(medicament.nom,medicament.idPatient,medicament.dose,medicament.Date,medicament.time))
+    def Get_Age_by_Date_Naissance(cur, dataNaissance: str):
+        cur.execute("SELECT DateNaissance FROM patient WHERE DateNaissance=%s", (dataNaissance,))
+        result = cur.fetchall()
+        if result:
+            return result[0]['DateNaissance']
+        else:
+            return None
+    @staticmethod
+    def lastPatient_Id(cur):
+        cur.execute("SELECT * FROM patient ORDER BY Id_Patient DESC LIMIT 1")
+        result = cur.fetchall()
+        return result
+
+    @staticmethod
+    def fetch_patient_info_by_Id(cur, patient_id):
+        query = "SELECT * FROM patient WHERE Id_Patient = %s"
+        cur.execute(query, (patient_id,))
+        return cur.fetchall()
+
+    @staticmethod
+    def fetch_medecins_details_by_patient_id(cur, Id_Patient):
+            query = """
+        SELECT *
+        FROM medecinPatient mp
+        INNER JOIN  medecins m ON mp.medecinId = m.Id_Medecin  -- Ajustez le nom de la table et la colonne si nécessaire
+        WHERE mp.patientId = %s
+        """
+            cur.execute(query, (Id_Patient,))
+            return cur.fetchall()
+    @staticmethod
+    def fetch_medicaments_details_by_patient_id(cur, Id_Patient):
+        query = """
+            SELECT m.nom_medicament, mp.dose, mp.derniere_date_de_prise
+            FROM medicament m
+            JOIN medicamentPatients mp ON m.id_Medicament = mp.id_Medicament
+            WHERE mp.Id_Patient = %s
+        """
+        cur.execute(query, (Id_Patient,))
+        return cur.fetchall()
+
+
+class DAOmedicament:
+    @staticmethod
+
+    def Ajouter_Medicament(cur, con, medi):
+        cur.execute('INSERT INTO medicament (nom_medicament, Id_Patient, id_Medicament) VALUES (%s, %s, %s)',
+                    (medi.nom_medicament, medi.Id_Patient, medi.id_Medicament))
         con.commit()
+
     @staticmethod
-    def deletemedicament(medi:Medicament):
-        cur.execute("DELETE FROM medicament where nom=%s",(medi.nom,))
-        con.commit()
+    def deletemedicament_by_Id(cur, con, medi: Medicament):
+        try:
+            cur.execute("DELETE FROM medicament WHERE id_Medicament=%s", (medi.id_Medicament,))
+            con.commit()
+        except Exception as e:
+            con.rollback()
+            raise e
+
     @staticmethod
-    def search(nom:str,idPatient:int):
-        cur.execute("select * from medicament where nom=%s and Id=%s",(nom,idPatient,))
-        result=cur.fetchall()  
-        """Med=Medicament(result[0][1],result[0][2],result[0][3],result[0][4])
-            return Med"""
+     
+    def search_Medicament_by_Id(cur, nom: str, idPatient: int):
+        try:
+            cur.execute("SELECT * FROM Medicament WHERE  nom_medicament=%s AND Id_Patient=%s", (nom, idPatient))
+            result = cur.fetchall()
+            return result
+        except Exception as e:
+            print(f"Error executing query: {e}")
+            return None
+    @staticmethod
+    def Medicament_details_byID(cur, id: int):
+        cur.execute("SELECT * FROM medicament WHERE id_Medicament=%s", (id,))
+        result = cur.fetchall()
         return result
-    
-    @staticmethod
-    def allMedicament(id:int):
-        cur.execute('select * from medicament where Id=%s',(id,))
-        result=cur.fetchall()
-        return result
+
 
 class DAOmedecin:
-    
     @staticmethod
-    def newMeddin(nom:str,spe:str,idp:int,image:str):
-        cur.execute('INSERT INTO medecin (nom, specialite, Id,image) VALUES (%s, %s, %s,%s)',(nom,spe,idp,image))   
+    def Ajouter_medecin(cur, con, nom: str, spe: str, idp: int, image: str):
+        cur.execute('INSERT INTO medecins (nom, specialite, Id_Medecin, image,numero_urgence) VALUES (%s, %s, %s, %s,%s)',
+                    (nom, spe, idp, image))
         con.commit()
 
     @staticmethod
-    def deletemedecin(nom:str):
-        cur.execute("DELETE FROM medecin where nom=%s", (nom,))
-        con.commit()
+    def deletemed(con, Idmedecin):
+        with con.cursor(dictionary=True) as cur:
+            cur.execute("DELETE FROM medecins WHERE Id_Medecin = %s", (Idmedecin,))
+            con.commit()
+            return True, "Record deleted"
 
     @staticmethod
-    def getall(id: int):
-        cur.execute("SELECT * FROM medecin WHERE id = %s", (id,))
+    def medecin_detail_by_Id(cur, id: int):
+        cur.execute("SELECT * FROM medecins WHERE Id_Medecin = %s", (id,))
         result = cur.fetchall()
         return result
-    
-
-
-
-    
-if __name__=='__main__':
-    #patient=Patients("nom","prenom","2024-05-25","Email","image.png","0621870090","Adresse","123","","","","","","")
-    """DAOpatients.newPatients(patient)"""
-    #medicament1=Medicament("nom1",63,100,"2024-05-30","10:30:10")
-    #(medicament.nom,medicament.idPatient,medicament.dose,medicament.Date,medicament.time)
-    #medicament2=Medicament(0,"nom",65,100,"2024-01-04","10")
-    #DAOmedicament.newMedicament(medicament1)
-    #DAOmedicament.newMedicament(medicament2)
-    #DAOmedicament.newMedicament("nom1",100,"2024-10-04","10:00:00",65)
-    #DAOmedicament.deletemedicament(medicament1)
-    #print(DAOmedicament.search("nom2",65))
-    #print(DAOpatients.logOut("Email","123"))
-    #print(DAOpatients.patient_age2("2020-05-28"))
-    #print(DAOpatients.lastPatient())
-    #print(DAOmedicament.allMedicament(63))
-    

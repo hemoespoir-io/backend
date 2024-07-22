@@ -1,59 +1,109 @@
 from dataclasses import dataclass
-
+import datetime
 @dataclass
-class Patients:
-    id:int
-    nomutilisateur : str
-    Nomcomplet :str
-    Date_Naissance :str
-    email : str
-    num_tel : str
-    adresse :  str
-    mdp : str
-    image : str
-    GR_S : str
-    taille : str
-    poids : str
-    sexe :  str
-    antecedant_mere :str
-    antecedant_pere:str
-  
+class patient:
+    def __init__(self, Id_Patient, NomUtilisateur, Nomcomplet, DateNaissance, Email, Telephone, 
+                 Adresse, Motdepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedentMere, 
+                 AntecedentPere, TypeDeMaladie):
+        self.Id_Patient = Id_Patient
+        self.NomUtilisateur = NomUtilisateur
+        self.Nomcomplet = Nomcomplet
+        self.DateNaissance = DateNaissance
+        self.Email = Email
+        self.Telephone = Telephone
+        self.Adresse = Adresse
+        self.Motdepasse = Motdepasse
+        self.image = image
+        self.Groupesanguin = Groupesanguin
+        self.Taille = Taille
+        self.Poids = Poids
+        self.Sexe = Sexe
+        self.AntecedentMere = AntecedentMere
+        self.AntecedentPere = AntecedentPere
+        self.TypeDeMaladie = TypeDeMaladie
+
     def to_dict(self):
         return {
-            "id": self.id,
-            "nomutilisateur": self.nomutilisateur,
-            "Nomcomplet":self.Nomcomplet,
-            "Date_Naissance":self.Date_Naissance,
-            "email":self.email,
-            "num_tel":self.num_tel,
-            "adresse":self.adresse,
-            "mdp": self.mdp,
-            "image":self.image,
-            "GR_S":self.GR_S,
-            "taille":self.taille,
-            "poids":self.poids,
-            "sexe":self.sexe,
-            "antecedant_mere":self.antecedant_mere,
-            "antecedant_pere":self.antecedant_pere
+            "Id_Patient": self.Id_Patient,
+            "NomUtilisateur": self.NomUtilisateur,
+            "Nomcomplet": self.Nomcomplet,
+            "DateNaissance": self.DateNaissance,
+            "Email": self.Email,
+            "Telephone": self.Telephone,
+            "Adresse": self.Adresse,
+            "Motdepasse": self.Motdepasse,
+            "image": self.image,
+            "Groupesanguin": self.Groupesanguin,
+            "Taille": self.Taille,
+            "Poids": self.Poids,
+            "Sexe": self.Sexe,
+            "AntecedentMere": self.AntecedentMere,
+            "AntecedentPere": self.AntecedentPere,
+            "TypeDeMaladie": self.TypeDeMaladie
         }
-
+    
 
 
 @dataclass
 class Medicament:
-    id:int
+    def __init__(self, id_Medicament: int, nom_medicament: str, Id_Patient: int):
+        self.id_Medicament = id_Medicament
+        self.nom_medicament = nom_medicament
+        
+    
+    def to_dict(self):
+        return {
+            "id_Medicament": self.id_Medicament,
+            "nom_medicament": self.nom_medicament,
+            
+        }
+@dataclass
+class   medecins:
+   
     nom: str
-    idPatient:int
-    dose: int
-    Date: str
-    time:str
+    specialite: str
+    Id_Medecin: int  
+    image: str
+    numero_urgence: str 
+    
+   
+    def to_dict(self):
+        return {
+            
+            "nom": self.nom,
+            "specialite": self.specialite,
+            "Id_Medecin": self.Id_Medecin,
+            "image": self.image,
+            "numero_urgence": self.numero_urgence,
+        }
+
 
 @dataclass
-class medecin:
-    nom:str
-    specialite:str
-    image:str
-    IdP:int
+class medecinPatient:
+    medecinId: int 
+    patientId: int  
+    DateDePriseEnCharge: int  
+    
+    def to_dict(self):
+        return {
+            "medecinId": self.medecinId,
+            "patientId": self.patientId,
+            "DateDePriseEnCharge": self.DateDePriseEnCharge 
+        }
 
 
+@dataclass
+class  medicamentPatients:
+    id_Medicament: int  # Renommé pour plus de clarté, correspond à 'idM'
+    Id_Patient: int     # Renommé pour plus de clarté, correspond à 'Id'
+    dose: str           
+    derniere_date_de_prise: datetime.date  # Utilisation du type 'date' pour mieux gérer les dates
 
+    # Méthode pour convertir l'instance en dictionnaire, utile pour l'interaction avec des bases de données
+    def to_dict(self):
+        return {
+            "idM": self.id_Medicament,
+            "Id_P": self.Id_Patient,
+            "dose": self.dose,
+            "derniere_date_de_prise": self.derniere_date_de_prise
+        }
