@@ -45,30 +45,28 @@ class patient:
 
 
 @dataclass
-class medicament:
-    id_Medicament: int
-    nom_medicament: str
-    Id_Patient: int  
-    
-
+class Medicament:
+    def __init__(self, id_Medicament: int, nom_medicament: str, Id_Patient: int):
+        self.id_Medicament = id_Medicament
+        self.nom_medicament = nom_medicament
+        
     
     def to_dict(self):
         return {
             "id_Medicament": self.id_Medicament,
             "nom_medicament": self.nom_medicament,
-            " Id_Patient": self. Id_Patient,
-           
+            
         }
 @dataclass
 class   medecins:
    
     nom: str
     specialite: str
-    Id_Medecin: int  # Renommé de 'IdP' pour correspondre à 'id' de la table
+    Id_Medecin: int  
     image: str
-    numero_urgence: str  # Numéro d'urgence, ajouté pour correspondre à la structure de la table
+    numero_urgence: str 
     
-    # Méthode pour convertir l'instance en dictionnaire, utile pour l'intégration avec des bases de données
+   
     def to_dict(self):
         return {
             
@@ -82,16 +80,15 @@ class   medecins:
 
 @dataclass
 class medecinPatient:
-    medecinId: int  # Correspond à 'medecinId'
-    patientId: int  # Correspond à 'patientId'
-    DateDePriseEnCharge: int  # Correspond à 'DateDePriseEnCharge'
+    medecinId: int 
+    patientId: int  
+    DateDePriseEnCharge: int  
     
-    # Méthode pour convertir l'instance en dictionnaire, utile pour l'interaction avec des bases de données
     def to_dict(self):
         return {
             "medecinId": self.medecinId,
             "patientId": self.patientId,
-            "DateDePriseEnCharge": self.DateDePriseEnCharge # Convertir la date en chaîne de caractères
+            "DateDePriseEnCharge": self.DateDePriseEnCharge 
         }
 
 
@@ -99,7 +96,7 @@ class medecinPatient:
 class  medicamentPatients:
     id_Medicament: int  # Renommé pour plus de clarté, correspond à 'idM'
     Id_Patient: int     # Renommé pour plus de clarté, correspond à 'Id'
-    dose: str           # Stocke la dose du médicament
+    dose: str           
     derniere_date_de_prise: datetime.date  # Utilisation du type 'date' pour mieux gérer les dates
 
     # Méthode pour convertir l'instance en dictionnaire, utile pour l'interaction avec des bases de données
