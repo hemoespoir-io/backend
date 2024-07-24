@@ -15,9 +15,9 @@ from datetime import datetime
 def connect_db():
     try:
         con = mysql.connect(
-            host="34.122.67.28",
-            user='root',
-            passwd='nabil123!',
+            host="localhost",
+            user='nabilpfe',
+            passwd='nabil123',
             database='pfe',
             port='3306',
             charset="utf8mb4"
@@ -333,8 +333,8 @@ def lastPatient_byID():
 
 
     
-    @staticmethod
-    def generate_steps_plot(age, weight):
+@staticmethod
+def generate_steps_plot(age, weight):
         steps_data = patientServices.pasParJours(age, weight)
         days = list(steps_data.keys())
         steps = list(steps_data.values())

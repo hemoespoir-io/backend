@@ -382,27 +382,34 @@ def delete_medecin():
         return jsonify({"error": message}), 500
     return jsonify({"message": message}), 200"""
 CORS(app)  # Permettre CORS pour toutes les routes
+
+
+
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
     username = data.get('username')
     password = data.get('password')
 
-    conn = connect_db()
-    if not conn:
-        return jsonify({"error": "Échec de la connexion à la base de données."}), 500
 
-    cur = conn.cursor()
-    patient_info, error = patientServices.logIn(cur, username, password)
-    cur.close()
-    conn.close()
+    patient_info, error = "{'nom': 'gggg'}", 0   #= patientServices.logIn(cur, username, password)
 
     if error:
         return jsonify({"error": error}), 401
     elif patient_info:
-        return jsonify({"patient": patient_info.__dict__}), 200
+        return jsonify({"patient": patient_info}), 200
     else:
         return jsonify({"error": "Identifiants invalides"}), 401
+@app.route('/fichemedical', methods=['GET'])
+def get_patient_details():
+    patient_id = request.args.get('patientid')
+    if not patient_id:
+        return jsonify({"error": "Missing patient ID"}), 400
 
+    details, error =patientServices.FicheMedicale(int(patient_id))
+    if error:
+        return jsonify({"error": error}), 500
+
+    return jsonify(details), 200
 if __name__ == '__main__':
     app.run(debug=True)
