@@ -217,8 +217,7 @@ class patientServices:
                     patient_data[0], patient_data[1], patient_data[2], patient_data[3],
                     patient_data[4], patient_data[5], patient_data[6], patient_data[7],
                     patient_data[8], patient_data[9], patient_data[10], patient_data[11],
-                    patient_data[12], patient_data[13], patient_data[14],patient_data[15], patient_data[16],
-                    patient_data[17], patient_data[18], patient_data[19],patient_data[20],patient_data[21],
+                    patient_data[12], patient_data[13], patient_data[14],patient_data[15],
                 )
                 return patient_obj, None
             else:

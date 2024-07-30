@@ -4,7 +4,7 @@ import datetime
 class patient:
     def __init__(self, Id_Patient, NomUtilisateur, Nomcomplet, DateNaissance, Email, Telephone, 
                  Adresse, Motdepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedentMere, 
-                 AntecedentPere, TypeDeMaladie,derniere_date_prise,derniere_dose_prise,nom_service_suivie, inhbiteur,allergie,autre_maladie):
+                 AntecedentPere, TypeDeMaladie):
         self.Id_Patient = Id_Patient
         self.NomUtilisateur = NomUtilisateur
         self.Nomcomplet = Nomcomplet
