@@ -16,11 +16,11 @@ def connect_db():
     try:
         con = mysql.connect(
             host="localhost",
-            user='nabilpfe',
-            passwd='nabil123',
+            user='root',
+            passwd='',
             database='pfe',
             port='3306',
-            charset="utf8mb4"
+            charset="utf8"
         )
         return con
     except mysql.Error as e:
@@ -56,7 +56,7 @@ class patientServices:
             return None, "Connection to database failed"
         
         try:
-            print(f"Recherche du patient avec l'ID : {patient_id}")  # Déclaration de débogage
+            print(f"Recherche du patient avec l'ID : {patient_id}")  
             with con.cursor(dictionary=True) as cur:
                 query = "SELECT * FROM patient WHERE Id_Patient = %s"
                 cur.execute(query, (patient_id,))
@@ -65,12 +65,12 @@ class patientServices:
             con.close()
 
             if patient_data is None:
-                print("Aucune donnée de patient trouvée.")  # Déclaration de débogage
+                print("Aucune donnée de patient trouvée.") 
                 return None, "Aucun patient trouvé"
-            print(f"Données du patient trouvées : {patient_data}")  # Déclaration de débogage
+            print(f"Données du patient trouvées : {patient_data}")  
             return patient_data, None
         except Exception as e:
-            print(f"Une erreur est survenue : {e}")  # Déclaration de débogage
+            print(f"Une erreur est survenue : {e}")  
             return None, str(e)
     
 
@@ -217,7 +217,8 @@ class patientServices:
                     patient_data[0], patient_data[1], patient_data[2], patient_data[3],
                     patient_data[4], patient_data[5], patient_data[6], patient_data[7],
                     patient_data[8], patient_data[9], patient_data[10], patient_data[11],
-                    patient_data[12], patient_data[13], patient_data[14],patient_data[15]
+                    patient_data[12], patient_data[13], patient_data[14],patient_data[15], patient_data[16],
+                    patient_data[17], patient_data[18], patient_data[19],patient_data[20],patient_data[21],
                 )
                 return patient_obj, None
             else:
@@ -459,63 +460,7 @@ class medecinservices:
     
 
 if __name__ == "__main__":
-    Id_Medecin = 1
-
-    result, error = medecinservices.searchmedecin(Id_Medecin)
-    if error:
-        print(f"Error: {error}")
-    else:
-        for med in result:
-            print(f"Result: {med.to_dict()}")
-
-    # Establish database connection
-       # Define test parameters
-    medecin_id = 123
-
-    # Establish database connection
-    con = connect_db()
-    if con:
-        with con.cursor(dictionary=True) as cur:
-            # Check and create table if it does not exist
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS medecins (
-                    Id_Medecin INT PRIMARY KEY,
-                    nom VARCHAR(255),
-                    specialite VARCHAR(255),
-                    image VARCHAR(255),
-                    numero_urgence VARCHAR(255)
-                )
-            """)
-            con.commit()
-            
-            # Delete any existing test record
-            cur.execute("DELETE FROM medecins WHERE Id_Medecin = %s", (medecin_id,))
-            con.commit()
-            
-            # Insert a test record to delete later
-            cur.execute("INSERT INTO medecins (Id_Medecin, nom, specialite, image, numero_urgence) VALUES (%s, %s, %s, %s, %s)", 
-                        (medecin_id, 'Dupont', 'Cardiologie', 'image_path.jpg', '123456789'))
-            con.commit()
-        
-        # Run the test
-        result, message = DAOmedecin.deletemed(con, medecin_id)
-        if result is None:
-            print(f"Test failed: {message}")
-        else:
-            print("Test passed: Medecin deleted successfully")
-
-        # Verify the record was deleted
-        with con.cursor(dictionary=True) as cur:
-            cur.execute("SELECT * FROM medecins WHERE Id_Medecin = %s", (medecin_id,))
-            record = cur.fetchone()
-            if record is None:
-                print("Verification passed: Medecin record deleted from database")
-            else:
-                print("Verification failed: Medecin record still exists in database")
-
-        con.close()
-    else:
-        print("Connection to database failed")
+   
         ######################
     """medecin_nom = "Dr. saraqasmi"
     medecin_spe = "Cardiology"

@@ -53,7 +53,7 @@ class DAOpatients:
         query = "SELECT * FROM patient WHERE NomUtilisateur = %s AND Motdepasse = %s"
         cur.execute(query, (username, password))
         return cur.fetchall()
-
+    
 
     @staticmethod
     def logOutByEmail_Passowrd(cur, gmail: str, mdp: str):
@@ -91,10 +91,12 @@ class DAOpatients:
 
     @staticmethod
     def fetch_patient_info_by_Id(cur, patient_id):
-        query = "SELECT * FROM patient WHERE Id_Patient = %s"
+        query = """
+        SELECT * FROM patient 
+        WHERE Id_Patient = %s
+        """
         cur.execute(query, (patient_id,))
         return cur.fetchall()
-
     @staticmethod
     def fetch_medecins_details_by_patient_id(cur, Id_Patient):
             query = """

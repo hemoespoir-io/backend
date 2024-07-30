@@ -4,7 +4,7 @@ import datetime
 class patient:
     def __init__(self, Id_Patient, NomUtilisateur, Nomcomplet, DateNaissance, Email, Telephone, 
                  Adresse, Motdepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedentMere, 
-                 AntecedentPere, TypeDeMaladie):
+                 AntecedentPere, TypeDeMaladie,derniere_date_prise,derniere_dose_prise,nom_service_suivie, inhbiteur,allergie,autre_maladie):
         self.Id_Patient = Id_Patient
         self.NomUtilisateur = NomUtilisateur
         self.Nomcomplet = Nomcomplet
@@ -21,7 +21,12 @@ class patient:
         self.AntecedentMere = AntecedentMere
         self.AntecedentPere = AntecedentPere
         self.TypeDeMaladie = TypeDeMaladie
-
+        self.derniere_date_prise=derniere_date_prise
+        self.derniere_dose_prise=derniere_dose_prise
+        self.nom_service_suivie=nom_service_suivie
+        self.inhbiteur=inhbiteur
+        self.allergie=allergie
+        self.autre_maladie=autre_maladie
     def to_dict(self):
         return {
             "Id_Patient": self.Id_Patient,
