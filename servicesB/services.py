@@ -10,49 +10,40 @@ from models import patient, Medicament, medecins, medicamentPatients, medecinPat
 from datetime import datetime
 from dal import DAOpatients
 from datetime import datetime
-import os
-from dotenv import load_dotenv
-import mysql.connector as mysql
-
-load_dotenv()
-def connect_db():
-    try:
-        con = mysql.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            passwd=os.getenv("DB_PASSWD"),
-            database=os.getenv("DB_NAME"),
-            port='3306',
-            charset="utf8"
-        )
-        return con
-    except mysql.Error as e:
-        print(f"Error connecting to MySQL database: {e}")
-        return None
 
 class patientServices:
     @staticmethod
-    def FicheMedicale(patient_id):#
-        con = connect_db()
-        if con is None:
-            return None, "Connection to database failed"
-
-        with con.cursor(dictionary=True) as cur:
-            patient = DAOpatients.fetch_patient_info_by_Id(cur, patient_id)
+    def FicheMedicale(config,patient_id):#
+        try:    
+            patient = DAOpatients.fetch_patient_info_by_Id(config, patient_id)
             if not patient:
-                con.close()
                 return None, "No patient found with Id_Patient = " + str(patient_id)
         
             patient_info = {
                 "patient": patient,
-                "medicament": DAOpatients.fetch_medicaments_details_by_patient_id(cur, patient_id),
-                "medecins": DAOpatients.fetch_medecins_details_by_patient_id(cur, patient_id)
+                "medicament": DAOpatients.fetch_medicaments_details_by_patient_id(config, patient_id),
+                "medecins": DAOpatients.fetch_medecins_details_by_patient_id( config,patient_id)
             }
 
-        con.close()
-        return patient_info, None
-    
+            return patient_info, None
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None, str(e)
+        
     @staticmethod
+    def logIn(config ,username, password):
+        try:
+            print(f"Tentative de connexion pour l'utilisateur: {username}")
+            patient = DAOpatients.logIn(config,username, password)
+            if patient:
+                return patient , None
+            else:
+                return None, "erreur de login"
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None, str(e)
+        
+""" @staticmethod
     def get_patient_byID(patient_id):#
         con = connect_db()
         if con is None:
@@ -209,7 +200,7 @@ class patientServices:
             return False
         return True
     @staticmethod
-    def logIn(cur, username, password):
+    def logIn(username, password):
         try:
             print(f"Tentative de connexion pour l'utilisateur: {username}")
             result = DAOpatients.logIn(cur, username, password)
@@ -459,7 +450,7 @@ class medecinservices:
                 allmedecin.append(Med)
         con.close()
         return allmedecin
-    
+    """
 
 if __name__ == "__main__":
    

@@ -1,11 +1,10 @@
 from flask import Flask, make_response,request,jsonify,session
-from dal import DAOpatients,DAOmedecin
-from services import  connect_db, patientServices,MedicamentService,medecinservices
-from models import patient,Medicament,medecins
+from services import  patientServices
 from flask_cors import CORS
+
 app = Flask(__name__)
 
-app=Flask(__name__)
+app.config.from_envvar('APP_SETTINGS')
 
 
 #Les routes
@@ -390,29 +389,24 @@ def login():
     data = request.json
     username = data.get('username')
     password = data.get('password')
-
-    conn = connect_db()
-    if not conn:
-        return jsonify({"error": "Échec de la connexion à la base de données."}), 500
-
-    cur = conn.cursor()
-    patient_info, error = patientServices.logIn(cur, username, password)
-    cur.close()
-    conn.close()
-
+    patient_info, error = patientServices.logIn(app.config, username, password)
+    
+    print(error)
     if error:
+        
         return jsonify({"error": error}), 401
-    elif patient_info:
-        return jsonify({"patient": patient_info.__dict__}), 200
-    else:
-        return jsonify({"error": "Identifiants invalides"}), 401
+    
+    return jsonify({"patient": patient_info}), 200
+    
+
+
 @app.route('/fichemedical', methods=['GET'])
 def get_patient_details():
     patient_id = request.args.get('patientid')
     if not patient_id:
         return jsonify({"error": "Missing patient ID"}), 400
 
-    details, error = patientServices.FicheMedicale(int(patient_id))
+    details, error = patientServices.FicheMedicale(app.config,int(patient_id))
     if error:
         return jsonify({"error": error}), 500
     
