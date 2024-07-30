@@ -21,12 +21,7 @@ class patient:
         self.AntecedentMere = AntecedentMere
         self.AntecedentPere = AntecedentPere
         self.TypeDeMaladie = TypeDeMaladie
-        self.derniere_date_prise=derniere_date_prise
-        self.derniere_dose_prise=derniere_dose_prise
-        self.nom_service_suivie=nom_service_suivie
-        self.inhbiteur=inhbiteur
-        self.allergie=allergie
-        self.autre_maladie=autre_maladie
+        
     def to_dict(self):
         return {
             "Id_Patient": self.Id_Patient,
