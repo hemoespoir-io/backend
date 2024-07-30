@@ -10,15 +10,18 @@ from models import patient, Medicament, medecins, medicamentPatients, medecinPat
 from datetime import datetime
 from dal import DAOpatients
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+import mysql.connector as mysql
 
-
+load_dotenv()
 def connect_db():
     try:
         con = mysql.connect(
-            host="localhost",
-            user='root',
-            passwd='',
-            database='pfe',
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            passwd=os.getenv("DB_PASSWD"),
+            database=os.getenv("DB_NAME"),
             port='3306',
             charset="utf8"
         )
