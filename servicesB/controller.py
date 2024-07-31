@@ -1,11 +1,10 @@
 from flask import Flask, make_response,request,jsonify,session
-from dal import DAOpatients,DAOmedecin
-from services import  connect_db, patientServices,MedicamentService,medecinservices
-from models import patient,Medicament,medecins
+from services import  patientServices
 from flask_cors import CORS
+
 app = Flask(__name__)
 
-app=Flask(__name__)
+app.config.from_envvar('APP_SETTINGS')
 
 
 #Les routes
@@ -382,27 +381,46 @@ def delete_medecin():
         return jsonify({"error": message}), 500
     return jsonify({"message": message}), 200"""
 CORS(app)  # Permettre CORS pour toutes les routes
+
+
+
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
     username = data.get('username')
     password = data.get('password')
+    if not username or not password:
+        return jsonify({"error": "Missing username or password"}), 400
+    
+    try:
+        patient_info, error = patientServices.logIn(app.config, username, password)
+        
+        if error:
+            return jsonify({"serveurerror": error}), 500
+        
+        return jsonify({"patient": patient_info}), 200
 
-    conn = connect_db()
-    if not conn:
-        return jsonify({"error": "Échec de la connexion à la base de données."}), 500
+    except ValueError:
+        return jsonify({"error": ValueError}), 500
+    
 
-    cur = conn.cursor()
-    patient_info, error = patientServices.logIn(cur, username, password)
-    cur.close()
-    conn.close()
 
-    if error:
-        return jsonify({"error": error}), 401
-    elif patient_info:
-        return jsonify({"patient": patient_info.__dict__}), 200
-    else:
-        return jsonify({"error": "Identifiants invalides"}), 401
+@app.route('/fichemedical', methods=['GET'])
+def get_patient_details():
+    #parametres dee requettes
+    patient_id = request.args.get('patientid')
+    if not patient_id:
+        return jsonify({"error": "Missing patient ID"}), 400
+#appel au service 
+    try:
+        
+        details, error = patientServices.FicheMedicale(app.config, int(patient_id))
+        if error:
+            return jsonify({"serveurerror": error}), 500
 
+        return jsonify(details), 200
+    except ValueError:
+        return jsonify({"error": ValueError}), 500
+   
 if __name__ == '__main__':
     app.run(debug=True)

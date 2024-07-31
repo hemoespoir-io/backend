@@ -21,7 +21,7 @@ class patient:
         self.AntecedentMere = AntecedentMere
         self.AntecedentPere = AntecedentPere
         self.TypeDeMaladie = TypeDeMaladie
-
+        
     def to_dict(self):
         return {
             "Id_Patient": self.Id_Patient,

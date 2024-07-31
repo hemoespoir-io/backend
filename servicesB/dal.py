@@ -4,7 +4,114 @@ from mysql.connector import Error
 from models import patient, Medicament,medecins,medicamentPatients,medecinPatient
 
 
+def connect_db(config):
+    try:
+        con = mysql.connect(
+            host=config['DB_HOST'],
+            user=config['DB_USER'],
+            passwd=config['DB_PASSWD'],
+            database=config['DB_DATABASE'],
+            port='3306',
+            charset="utf8"
+        )
+        return con, None
+    except mysql.Error as e:
+        print(f"Error connecting to MySQL database: {e}")
+        return None, e
+
+
 class DAOpatients:
+    @staticmethod
+    def logIn( config ,username, password):
+        con, error = connect_db(config)
+        if con is None:
+            return None, "Connection to database failed: %s" % (error)
+        
+        try:
+            with con.cursor(dictionary=True) as cur:
+                query = "SELECT * FROM patient WHERE NomUtilisateur = %s AND Motdepasse = %s"
+                cur.execute(query, (username, password))
+                patient=cur.fetchall()
+                con.close()
+                return patient, None
+        
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None, str(e)
+        finally:
+            con.close()
+     ##
+    @staticmethod
+    def fetch_patient_info_by_Id(config, patient_id):
+        con, error = connect_db(config)
+        if con is None:
+            return None, "Connection to database failed %s" % (error)
+        
+        try:
+            with con.cursor(dictionary=True) as cur:
+                query = "SELECT * FROM patient WHERE Id_Patient = %s"
+                cur.execute(query, (patient_id,))
+                patient = cur.fetchall()
+                return patient, None
+        except Exception as e:
+            return None, str(e)
+        finally:
+            con.close()
+    
+    ##
+    @staticmethod
+    def fetch_medecins_details_by_patient_id(config, Id_Patient):
+        con, error = connect_db(config)
+        if con is None:
+            return None, "Connection to database failed %s" % (error)
+
+        try:
+            with con.cursor(dictionary=True) as cur:
+                query = """
+                    SELECT *
+                    FROM medecinPatient mp
+                    INNER JOIN medecins m ON mp.medecinId = m.Id_Medecin
+                    WHERE mp.patientId = %s
+                """
+                cur.execute(query, (Id_Patient,))
+                medecins = cur.fetchall()
+                return medecins, None
+        except Exception as e:
+            return None, str(e)
+        finally:
+            con.close()
+    
+    ##
+    @staticmethod
+    def fetch_medicaments_details_by_patient_id(config, Id_Patient):
+        con = connect_db(config)
+        con, error = connect_db(config)
+        if con is None:
+            return None, "Connection to database failed %s" % (error)
+
+        try:
+            with con.cursor(dictionary=True) as cur:
+                query = """
+                    SELECT m.nom_medicament, mp.dose, mp.derniere_date_de_prise
+                    FROM medicament m
+                    JOIN medicamentPatients mp ON m.id_Medicament = mp.id_Medicament
+                    WHERE mp.Id_Patient = %s
+                """
+                cur.execute(query, (Id_Patient,))
+                medicaments = cur.fetchall()
+                return medicaments, None
+        except Exception as e:
+            return None, str(e)
+        finally:
+            con.close()
+
+
+
+
+            ##################################################################################"
+            # "
+
+            
     @staticmethod
     def AjouterPatientbyId(cur, con, patient):
         cur.execute('INSERT INTO patient (Id_Patient, NomUtilisateur, Nomcomplet, DateNaissance, Email, Telephone, Adresse, Motdepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedentMere, AntecedentPere, TypeDeMaladie) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
@@ -48,12 +155,7 @@ class DAOpatients:
             return result[0]
         else:
             return None
-    @staticmethod
-    def logIn(cur, username, password):
-        query = "SELECT * FROM patient WHERE NomUtilisateur = %s AND Motdepasse = %s"
-        cur.execute(query, (username, password))
-        return cur.fetchall()
-
+   
 
     @staticmethod
     def logOutByEmail_Passowrd(cur, gmail: str, mdp: str):
@@ -88,34 +190,25 @@ class DAOpatients:
         cur.execute("SELECT * FROM patient ORDER BY Id_Patient DESC LIMIT 1")
         result = cur.fetchall()
         return result
+   
+    """@staticmethod
+    def fetch__details_by_patient_id( Id_Patient):
+        con = connect_db(config)
+        if con is None:
+            return None, "Connection to database failed"
 
-    @staticmethod
-    def fetch_patient_info_by_Id(cur, patient_id):
-        query = "SELECT * FROM patient WHERE Id_Patient = %s"
-        cur.execute(query, (patient_id,))
-        return cur.fetchall()
-
-    @staticmethod
-    def fetch_medecins_details_by_patient_id(cur, Id_Patient):
-            query = """
-        SELECT *
-        FROM medecinPatient mp
-        INNER JOIN  medecins m ON mp.medecinId = m.Id_Medecin  -- Ajustez le nom de la table et la colonne si nécessaire
-        WHERE mp.patientId = %s
-        """
-            cur.execute(query, (Id_Patient,))
-            return cur.fetchall()
-    @staticmethod
-    def fetch_medicaments_details_by_patient_id(cur, Id_Patient):
-        query = """
-            SELECT m.nom_medicament, mp.dose, mp.derniere_date_de_prise
-            FROM medicament m
-            JOIN medicamentPatients mp ON m.id_Medicament = mp.id_Medicament
-            WHERE mp.Id_Patient = %s
-        """
-        cur.execute(query, (Id_Patient,))
-        return cur.fetchall()
-
+        with con.cursor(dictionary=True) as cur:
+            query =""" """
+                SELECT m.nom_medicament, mp.dose, mp.derniere_date_de_prise
+                FROM medicament m
+                JOIN medicamentPatients mp ON m.id_Medicament = mp.id_Medicament
+                WHERE mp.Id_Patient = %s
+            """
+"""cur.execute(query, (Id_Patient,))
+            medicaments=cur.fetchall()
+            con.close()
+            return medicaments
+        con.close()"""
 
 class DAOmedicament:
     @staticmethod
