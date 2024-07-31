@@ -406,11 +406,15 @@ def get_patient_details():
     if not patient_id:
         return jsonify({"error": "Missing patient ID"}), 400
 
-    details, error = patientServices.FicheMedicale(app.config,int(patient_id))
-    if error:
-        return jsonify({"error": error}), 500
-    
+    try:
+        
+        details, error = patientServices.FicheMedicale(app.config, int(patient_id))
+        if error:
+            return jsonify({"error": error}), 500
 
-    return jsonify(details), 200
+        return jsonify(details), 200
+    except ValueError:
+        return jsonify({"error": " ID patient invalid"}), 400
+   
 if __name__ == '__main__':
     app.run(debug=True)

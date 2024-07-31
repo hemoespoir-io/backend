@@ -36,63 +36,67 @@ class DAOpatients:
         con.close()
      ##
     @staticmethod
-    def fetch_patient_info_by_Id(config ,patient_id):
+    def fetch_patient_info_by_Id(config, patient_id):
+        con = connect_db(config)
+        if con is None:
+            return None, "Connection to database failed"
         
-        con = connect_db(config)
-        if con is None:
-            return None, "Connection to database failed"
-
-        with con.cursor(dictionary=True) as cur:
-            query = """
-            SELECT * FROM patient 
-            WHERE Id_Patient = %s
-            """
-            cur.execute(query, (patient_id,))
-            patient = cur.fetchall()
+        try:
+            with con.cursor(dictionary=True) as cur:
+                query = "SELECT * FROM patient WHERE Id_Patient = %s"
+                cur.execute(query, (patient_id,))
+                patient = cur.fetchall()
+                return patient, None
+        except Exception as e:
+            return None, str(e)
+        finally:
             con.close()
-            return patient
-        con.close()
-
     
     ##
     @staticmethod
-    def fetch_medecins_details_by_patient_id( config ,Id_Patient):
+    def fetch_medecins_details_by_patient_id(config, Id_Patient):
         con = connect_db(config)
         if con is None:
             return None, "Connection to database failed"
 
-        with con.cursor(dictionary=True) as cur: 
-            query = """
-            SELECT *
-            FROM medecinPatient mp
-            INNER JOIN  medecins m ON mp.medecinId = m.Id_Medecin  -- Ajustez le nom de la table et la colonne si nécessaire
-            WHERE mp.patientId = %s
-         """
-            cur.execute(query, (Id_Patient,))
-            medecins=cur.fetchall()
+        try:
+            with con.cursor(dictionary=True) as cur:
+                query = """
+                    SELECT *
+                    FROM medecinPatient mp
+                    INNER JOIN medecins m ON mp.medecinId = m.Id_Medecin
+                    WHERE mp.patientId = %s
+                """
+                cur.execute(query, (Id_Patient,))
+                medecins = cur.fetchall()
+                return medecins, None
+        except Exception as e:
+            return None, str(e)
+        finally:
             con.close()
-            return medecins
-        con.close()
     
     ##
     @staticmethod
-    def fetch_medicaments_details_by_patient_id(config ,Id_Patient):
+    def fetch_medicaments_details_by_patient_id(config, Id_Patient):
         con = connect_db(config)
         if con is None:
             return None, "Connection to database failed"
 
-        with con.cursor(dictionary=True) as cur: 
-            query = """
-                SELECT m.nom_medicament, mp.dose, mp.derniere_date_de_prise
-            FROM medicament m
-            JOIN medicamentPatients mp ON m.id_Medicament = mp.id_Medicament
-            WHERE mp.Id_Patient = %s
-            """
-            cur.execute(query, (Id_Patient,))
-            Medicament=cur.fetchall
+        try:
+            with con.cursor(dictionary=True) as cur:
+                query = """
+                    SELECT m.nom_medicament, mp.dose, mp.derniere_date_de_prise
+                    FROM medicament m
+                    JOIN medicamentPatients mp ON m.id_Medicament = mp.id_Medicament
+                    WHERE mp.Id_Patient = %s
+                """
+                cur.execute(query, (Id_Patient,))
+                medicaments = cur.fetchall()
+                return medicaments, None
+        except Exception as e:
+            return None, str(e)
+        finally:
             con.close()
-            return Medicament
-        con.close()
     @staticmethod
     def AjouterPatientbyId(cur, con, patient):
         cur.execute('INSERT INTO patient (Id_Patient, NomUtilisateur, Nomcomplet, DateNaissance, Email, Telephone, Adresse, Motdepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedentMere, AntecedentPere, TypeDeMaladie) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
