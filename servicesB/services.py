@@ -15,14 +15,17 @@ class patientServices:
     @staticmethod
     def FicheMedicale(config,patient_id):#
         try:    
-            patient = DAOpatients.fetch_patient_info_by_Id(config, patient_id)
+            patient, e_patient = DAOpatients.fetch_patient_info_by_Id(config, patient_id)
+            medicaments, _ =DAOpatients.fetch_medicaments_details_by_patient_id(config, patient_id)
+            medecins, _ = DAOpatients.fetch_medecins_details_by_patient_id( config,patient_id)
+
             if not patient:
-                return None, "No patient found with Id_Patient = " + str(patient_id)
-        
+                return None, "No patient found with Id_Patient = " + str(patient_id) + ": " + str(e_patient)
+            
             patient_info = {
                 "patient": patient,
-                "medicament": DAOpatients.fetch_medicaments_details_by_patient_id(config, patient_id),
-                "medecins": DAOpatients.fetch_medecins_details_by_patient_id( config,patient_id)
+                "medicament": medicaments,
+                "medecins": medecins
             }
 
             return patient_info, None
@@ -34,11 +37,11 @@ class patientServices:
     def logIn(config ,username, password):
         try:
             print(f"Tentative de connexion pour l'utilisateur: {username}")
-            patient = DAOpatients.logIn(config,username, password)
-            if patient:
-                return patient , None
-            else:
-                return None, "erreur de login"
+            patient, error = DAOpatients.logIn(config,username, password)
+            if error:
+                return None, "Tentative de connexion pour l'utilisateur: " + str(username) + ": " + str(error)
+            
+            return patient , None
         except Exception as e:
             print(f"Exception: {e}")
             return None, str(e)

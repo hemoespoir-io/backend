@@ -14,32 +14,38 @@ def connect_db(config):
             port='3306',
             charset="utf8"
         )
-        return con
+        return con, None
     except mysql.Error as e:
         print(f"Error connecting to MySQL database: {e}")
-        return None
+        return None, e
 
 
 class DAOpatients:
     @staticmethod
     def logIn( config ,username, password):
-        con = connect_db(config)
+        con, error = connect_db(config)
         if con is None:
-            return None, "Connection to database failed"
-            
-        with con.cursor(dictionary=True) as cur:
-            query = "SELECT * FROM patient WHERE NomUtilisateur = %s AND Motdepasse = %s"
-            cur.execute(query, (username, password))
-            patient=cur.fetchall()
+            return None, "Connection to database failed: %s" % (error)
+        
+        try:
+            with con.cursor(dictionary=True) as cur:
+                query = "SELECT * FROM patient WHERE NomUtilisateur = %s AND Motdepasse = %s"
+                cur.execute(query, (username, password))
+                patient=cur.fetchall()
+                con.close()
+                return patient, None
+        
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None, str(e)
+        finally:
             con.close()
-            return patient
-        con.close()
      ##
     @staticmethod
     def fetch_patient_info_by_Id(config, patient_id):
-        con = connect_db(config)
+        con, error = connect_db(config)
         if con is None:
-            return None, "Connection to database failed"
+            return None, "Connection to database failed %s" % (error)
         
         try:
             with con.cursor(dictionary=True) as cur:
@@ -55,9 +61,9 @@ class DAOpatients:
     ##
     @staticmethod
     def fetch_medecins_details_by_patient_id(config, Id_Patient):
-        con = connect_db(config)
+        con, error = connect_db(config)
         if con is None:
-            return None, "Connection to database failed"
+            return None, "Connection to database failed %s" % (error)
 
         try:
             with con.cursor(dictionary=True) as cur:
@@ -79,8 +85,9 @@ class DAOpatients:
     @staticmethod
     def fetch_medicaments_details_by_patient_id(config, Id_Patient):
         con = connect_db(config)
+        con, error = connect_db(config)
         if con is None:
-            return None, "Connection to database failed"
+            return None, "Connection to database failed %s" % (error)
 
         try:
             with con.cursor(dictionary=True) as cur:
@@ -97,6 +104,14 @@ class DAOpatients:
             return None, str(e)
         finally:
             con.close()
+
+
+
+
+            ##################################################################################"
+            # "
+
+            
     @staticmethod
     def AjouterPatientbyId(cur, con, patient):
         cur.execute('INSERT INTO patient (Id_Patient, NomUtilisateur, Nomcomplet, DateNaissance, Email, Telephone, Adresse, Motdepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedentMere, AntecedentPere, TypeDeMaladie) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',

@@ -389,32 +389,38 @@ def login():
     data = request.json
     username = data.get('username')
     password = data.get('password')
-    patient_info, error = patientServices.logIn(app.config, username, password)
+    if not username or not password:
+        return jsonify({"error": "Missing username or password"}), 400
     
-    print(error)
-    if error:
+    try:
+        patient_info, error = patientServices.logIn(app.config, username, password)
         
-        return jsonify({"error": error}), 401
-    
-    return jsonify({"patient": patient_info}), 200
+        if error:
+            return jsonify({"serveurerror": error}), 500
+        
+        return jsonify({"patient": patient_info}), 200
+
+    except ValueError:
+        return jsonify({"error": ValueError}), 500
     
 
 
 @app.route('/fichemedical', methods=['GET'])
 def get_patient_details():
+    #parametres dee requettes
     patient_id = request.args.get('patientid')
     if not patient_id:
         return jsonify({"error": "Missing patient ID"}), 400
-
+#appel au service 
     try:
         
         details, error = patientServices.FicheMedicale(app.config, int(patient_id))
         if error:
-            return jsonify({"error": error}), 500
+            return jsonify({"serveurerror": error}), 500
 
         return jsonify(details), 200
     except ValueError:
-        return jsonify({"error": " ID patient invalid"}), 400
+        return jsonify({"error": ValueError}), 500
    
 if __name__ == '__main__':
     app.run(debug=True)
