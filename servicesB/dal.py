@@ -255,11 +255,19 @@ class DAOmedecin:
         
         try:
             with con.cursor(dictionary=True) as cur:
+<<<<<<< HEAD
                 query = "SELECT * FROM medecin WHERE nom  = %s AND mot_de_passe = %s"
                 cur.execute(query, (username, password))
                 medecin=cur.fetchall()
                 con.close()
                 return medecin, None
+=======
+                query = "SELECT * FROM medecins WHERE nom  = %s AND mot_de_passe = %s"
+                cur.execute(query, (username, password))
+                medecins=cur.fetchall()
+                con.close()
+                return medecins, None
+>>>>>>> e197a56 (feat-7)
         
         except Exception as e:
             print(f"Exception: {e}")
@@ -268,7 +276,11 @@ class DAOmedecin:
             con.close()
 @staticmethod
 def Ajouter_medecin(cur, con, nom: str, spe: str, idp: int, image: str):
+<<<<<<< HEAD
         cur.execute('INSERT INTO medecin (nom, specialite, Id_Medecin, image,numero_urgence) VALUES (%s, %s, %s, %s,%s)',
+=======
+        cur.execute('INSERT INTO medecins (nom, specialite, Id_Medecin, image,numero_urgence) VALUES (%s, %s, %s, %s,%s)',
+>>>>>>> e197a56 (feat-7)
                     (nom, spe, idp, image))
         con.commit()
 
@@ -281,6 +293,10 @@ def deletemed(con, Idmedecin):
 
 @staticmethod
 def medecin_detail_by_Id(cur, id: int):
+<<<<<<< HEAD
         cur.execute("SELECT * FROM medecin WHERE Id_Medecin = %s", (id,))
+=======
+        cur.execute("SELECT * FROM medecins WHERE Id_Medecin = %s", (id,))
+>>>>>>> e197a56 (feat-7)
         result = cur.fetchall()
         return result
