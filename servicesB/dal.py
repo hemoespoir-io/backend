@@ -21,6 +21,7 @@ def connect_db(config):
 
 
 class DAOpatients:
+   
     @staticmethod
     def logIn( config ,username, password):
         con, error = connect_db(config)
@@ -246,20 +247,40 @@ class DAOmedicament:
 
 class DAOmedecin:
     @staticmethod
-    def Ajouter_medecin(cur, con, nom: str, spe: str, idp: int, image: str):
+    #login medecin 
+    def logInMedecin( config ,username, password):
+        con, error = connect_db(config)
+        if con is None:
+            return None, "Connection to database failed: %s" % (error)
+        
+        try:
+            with con.cursor(dictionary=True) as cur:
+                query = "SELECT * FROM medecins WHERE nom  = %s AND mot_de_passe = %s"
+                cur.execute(query, (username, password))
+                medecins=cur.fetchall()
+                con.close()
+                return medecins, None
+        
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None, str(e)
+        finally:
+            con.close()
+@staticmethod
+def Ajouter_medecin(cur, con, nom: str, spe: str, idp: int, image: str):
         cur.execute('INSERT INTO medecins (nom, specialite, Id_Medecin, image,numero_urgence) VALUES (%s, %s, %s, %s,%s)',
                     (nom, spe, idp, image))
         con.commit()
 
-    @staticmethod
-    def deletemed(con, Idmedecin):
+@staticmethod
+def deletemed(con, Idmedecin):
         with con.cursor(dictionary=True) as cur:
             cur.execute("DELETE FROM medecins WHERE Id_Medecin = %s", (Idmedecin,))
             con.commit()
             return True, "Record deleted"
 
-    @staticmethod
-    def medecin_detail_by_Id(cur, id: int):
+@staticmethod
+def medecin_detail_by_Id(cur, id: int):
         cur.execute("SELECT * FROM medecins WHERE Id_Medecin = %s", (id,))
         result = cur.fetchall()
         return result

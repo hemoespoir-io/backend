@@ -46,6 +46,21 @@ class patientServices:
             print(f"Exception: {e}")
             return None, str(e)
         
+
+class medecinservices:
+    @staticmethod
+
+    def logInMedecin(config, username, password):
+        try:
+            print(f"Tentative de connexion pour l'utilisateur: {username}")
+            patient, error = DAOmedecin.logInMedecin(config, username, password)
+            if error:
+                return None, "Tentative de connexion pour l'utilisateur: " + str(username) + ": " + str(error)
+            
+            return patient, None
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None, str(e)
 """ @staticmethod
     def get_patient_byID(patient_id):#
         con = connect_db()
