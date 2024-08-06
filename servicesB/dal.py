@@ -1,7 +1,7 @@
 import mysql.connector as mysql
 from mysql.connector import Error
 #from Analyse_de_donnes.testt import Medicament
-from models import patient, Medicament,medecins,medicamentPatients,medecinPatient
+from models import patient, Medicament,medecin,medicamentPatients,medecinPatient
 
 
 def connect_db(config):
@@ -71,12 +71,12 @@ class DAOpatients:
                 query = """
                     SELECT *
                     FROM medecinPatient mp
-                    INNER JOIN medecins m ON mp.medecinId = m.Id_Medecin
+                    INNER JOIN medecin m ON mp.medecinId = m.Id_Medecin
                     WHERE mp.patientId = %s
                 """
                 cur.execute(query, (Id_Patient,))
-                medecins = cur.fetchall()
-                return medecins, None
+                medecin = cur.fetchall()
+                return medecin, None
         except Exception as e:
             return None, str(e)
         finally:
@@ -255,11 +255,11 @@ class DAOmedecin:
         
         try:
             with con.cursor(dictionary=True) as cur:
-                query = "SELECT * FROM medecins WHERE nom  = %s AND mot_de_passe = %s"
+                query = "SELECT * FROM medecin WHERE nom  = %s AND mot_de_passe = %s"
                 cur.execute(query, (username, password))
-                medecins=cur.fetchall()
+                medecin=cur.fetchall()
                 con.close()
-                return medecins, None
+                return medecin, None
         
         except Exception as e:
             print(f"Exception: {e}")
@@ -268,19 +268,19 @@ class DAOmedecin:
             con.close()
 @staticmethod
 def Ajouter_medecin(cur, con, nom: str, spe: str, idp: int, image: str):
-        cur.execute('INSERT INTO medecins (nom, specialite, Id_Medecin, image,numero_urgence) VALUES (%s, %s, %s, %s,%s)',
+        cur.execute('INSERT INTO medecin (nom, specialite, Id_Medecin, image,numero_urgence) VALUES (%s, %s, %s, %s,%s)',
                     (nom, spe, idp, image))
         con.commit()
 
 @staticmethod
 def deletemed(con, Idmedecin):
         with con.cursor(dictionary=True) as cur:
-            cur.execute("DELETE FROM medecins WHERE Id_Medecin = %s", (Idmedecin,))
+            cur.execute("DELETE FROM medecin WHERE Id_Medecin = %s", (Idmedecin,))
             con.commit()
             return True, "Record deleted"
 
 @staticmethod
 def medecin_detail_by_Id(cur, id: int):
-        cur.execute("SELECT * FROM medecins WHERE Id_Medecin = %s", (id,))
+        cur.execute("SELECT * FROM medecin WHERE Id_Medecin = %s", (id,))
         result = cur.fetchall()
         return result

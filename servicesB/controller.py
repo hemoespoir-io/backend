@@ -436,7 +436,7 @@ def loginMedecin():
         if error:
             return jsonify({"serveurerror": error}), 500
         
-        return jsonify({"medecins": medecin_info}), 200
+        return jsonify({"medecin": medecin_info}), 200
 
     except ValueError:
         return jsonify({"error": ValueError}), 500

@@ -1,12 +1,12 @@
 from dal import DAOpatients, DAOmedicament, DAOmedecin
-from models import patient, Medicament, medecins, medicamentPatients
+from models import patient, Medicament, medecin, medicamentPatients
 from datetime import datetime
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from datetime import datetime, date
 from typing import List
 import mysql.connector as mysql
-from models import patient, Medicament, medecins, medicamentPatients, medecinPatient
+from models import patient, Medicament, medecin, medicamentPatients, medecinPatient
 from datetime import datetime
 from dal import DAOpatients
 from datetime import datetime
@@ -17,7 +17,7 @@ class patientServices:
         try:    
             patient, e_patient = DAOpatients.fetch_patient_info_by_Id(config, patient_id)
             medicaments, _ =DAOpatients.fetch_medicaments_details_by_patient_id(config, patient_id)
-            medecins, _ = DAOpatients.fetch_medecins_details_by_patient_id( config,patient_id)
+            medecin, _ = DAOpatients.fetch_medecins_details_by_patient_id( config,patient_id)
 
             if not patient:
                 return None, "No patient found with Id_Patient = " + str(patient_id) + ": " + str(e_patient)
@@ -25,7 +25,7 @@ class patientServices:
             patient_info = {
                 "patient": patient,
                 "medicament": medicaments,
-                "medecins": medecins
+                "medecin": medecin
             }
 
             return patient_info, None
@@ -53,11 +53,11 @@ class medecinservices:
     def logInMedecin(config, username, password):
         try:
             print(f"Tentative de connexion pour l'utilisateur: {username}")
-            patient, error = DAOmedecin.logInMedecin(config, username, password)
+            medecin, error = DAOmedecin.logInMedecin(config, username, password)
             if error:
                 return None, "Tentative de connexion pour l'utilisateur: " + str(username) + ": " + str(error)
             
-            return patient, None
+            return medecin, None
         except Exception as e:
             print(f"Exception: {e}")
             return None, str(e)
