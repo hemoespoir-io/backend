@@ -1,5 +1,5 @@
 from flask import Flask, make_response,request,jsonify,session
-from services import  patientServices
+from services import  medecinservices, patientServices
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -384,6 +384,24 @@ CORS(app)  # Permettre CORS pour toutes les routes
 
 
 
+
+
+@app.route('/fichemedical', methods=['GET'])
+def get_patient_details():
+    #parametres dee requettes
+    patient_id = request.args.get('patientid')
+    if not patient_id:
+        return jsonify({"error": "Missing patient ID"}), 400
+#appel au service 
+    try:
+        
+        details, error = patientServices.FicheMedicale(app.config, int(patient_id))
+        if error:
+            return jsonify({"serveurerror": error}), 500
+
+        return jsonify(details), 200
+    except ValueError:
+        return jsonify({"error": ValueError}), 500
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
@@ -403,24 +421,25 @@ def login():
     except ValueError:
         return jsonify({"error": ValueError}), 500
     
-
-
-@app.route('/fichemedical', methods=['GET'])
-def get_patient_details():
-    #parametres dee requettes
-    patient_id = request.args.get('patientid')
-    if not patient_id:
-        return jsonify({"error": "Missing patient ID"}), 400
-#appel au service 
+#loginMedecin
+@app.route('/loginMedecin', methods=['POST'])
+def loginMedecin():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    if not username or not password:
+        return jsonify({"error": "Missing username or password"}), 400
+    
     try:
+        medecin_info, error = medecinservices.logInMedecin(app.config, username, password)
         
-        details, error = patientServices.FicheMedicale(app.config, int(patient_id))
         if error:
             return jsonify({"serveurerror": error}), 500
+        
+        return jsonify({"medecin": medecin_info}), 200
 
-        return jsonify(details), 200
     except ValueError:
         return jsonify({"error": ValueError}), 500
-   
+    
 if __name__ == '__main__':
     app.run(debug=True)

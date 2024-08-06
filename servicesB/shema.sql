@@ -62,3 +62,6 @@ CREATE TABLE medicamentPatients (
   CONSTRAINT medicamentPatients_ibfk_1 FOREIGN KEY (id_Medicament) REFERENCES Medicament (id_Medicament) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT medicamentPatients_ibfk_2 FOREIGN KEY (Id_Patient) REFERENCES patient (Id_Patient) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+--ajout du champs mots de passe dans la table medecins
+ALTER TABLE medecins
+ADD COLUMN mot_de_passe VARCHAR(255) NULL;

@@ -58,7 +58,7 @@ class Medicament:
             
         }
 @dataclass
-class   medecins:
+class   medecin:
    
     nom: str
     specialite: str
