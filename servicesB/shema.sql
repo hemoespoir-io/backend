@@ -65,3 +65,15 @@ CREATE TABLE medicamentPatients (
 --ajout du champs mots de passe dans la table medecins
 ALTER TABLE medecins
 ADD COLUMN mot_de_passe VARCHAR(255) NULL;
+--ajouter une class rendez-vous
+CREATE TABLE rendez_vous (
+    medecinId INT(11) NOT NULL,
+    patientId INT(11) NOT NULL,
+    date DATE NOT NULL,
+    heure int NOT NULL,
+    description TEXT,
+    duree int NOT NULL,
+    PRIMARY KEY (medecinId, patientId, date, heure),
+    FOREIGN KEY (medecinId) REFERENCES medecin(Id_Medecin),
+    FOREIGN KEY (patientId) REFERENCES patient(Id_Patient)
+);
