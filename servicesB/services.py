@@ -29,8 +29,8 @@ class patientServices:
                 if rdv.get('patientId') == str(patientId):
                 
                     continue
-            else:
-                rdv['description'] = ""
+                else:
+                    rdv['description'] = ""
 
             return rendez_vous, None
         except Exception as e:
