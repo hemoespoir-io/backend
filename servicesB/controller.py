@@ -382,7 +382,7 @@ def delete_medecin():
     if result is None:
         return jsonify({"error": message}), 500
     return jsonify({"message": message}), 200"""
-CORS(app)  # Permettre CORS pour toutes les routes
+CORS(app)  
 
 
 
@@ -442,8 +442,7 @@ def loginMedecin():
     except ValueError:
         return jsonify({"error": ValueError}), 500
     
-    #####################################
-# Exemple de rendez-vous déjà réservés
+   
 CORS(app) 
 @app.route('/getAppointment', methods=['POST'])
 def getAppointment():

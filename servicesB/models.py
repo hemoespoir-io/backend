@@ -21,7 +21,7 @@ class patient:
         self.Poids = Poids
         self.Sexe = Sexe
         self.AntecedentMere = AntecedentMere
-        self.Id_Medecin = Id_Medecin
+
         self.TypeDeMaladie = TypeDeMaladie
         
     def to_dict(self):
@@ -40,7 +40,6 @@ class patient:
             "Poids": self.Poids,
             "Sexe": self.Sexe,
             "AntecedentMere": self.AntecedentMere,
-            "Id_Medecin": self.Id_Medecin ,
             "TypeDeMaladie": self.TypeDeMaladie
         }
     
