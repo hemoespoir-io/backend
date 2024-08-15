@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 import datetime
+from sqlite3 import Date
+import time
 @dataclass
 class patient:
     def __init__(self, Id_Patient, NomUtilisateur, Nomcomplet, DateNaissance, Email, Telephone, 
-                 Adresse, Motdepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedentMere, 
-                 AntecedentPere, TypeDeMaladie):
+                 Adresse, Motdepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedentMere,  TypeDeMaladie):
         self.Id_Patient = Id_Patient
         self.NomUtilisateur = NomUtilisateur
         self.Nomcomplet = Nomcomplet
@@ -19,7 +20,7 @@ class patient:
         self.Poids = Poids
         self.Sexe = Sexe
         self.AntecedentMere = AntecedentMere
-        self.AntecedentPere = AntecedentPere
+
         self.TypeDeMaladie = TypeDeMaladie
         
     def to_dict(self):
@@ -38,7 +39,6 @@ class patient:
             "Poids": self.Poids,
             "Sexe": self.Sexe,
             "AntecedentMere": self.AntecedentMere,
-            "AntecedentPere": self.AntecedentPere,
             "TypeDeMaladie": self.TypeDeMaladie
         }
     
@@ -94,16 +94,33 @@ class medecinPatient:
 
 @dataclass
 class  medicamentPatients:
-    id_Medicament: int  # Renommé pour plus de clarté, correspond à 'idM'
-    Id_Patient: int     # Renommé pour plus de clarté, correspond à 'Id'
+    id_Medicament: int  
+    Id_Patient: int    
     dose: str           
-    derniere_date_de_prise: datetime.date  # Utilisation du type 'date' pour mieux gérer les dates
+    derniere_date_de_prise: datetime.date 
 
-    # Méthode pour convertir l'instance en dictionnaire, utile pour l'interaction avec des bases de données
+    
     def to_dict(self):
         return {
             "idM": self.id_Medicament,
             "Id_P": self.Id_Patient,
             "dose": self.dose,
             "derniere_date_de_prise": self.derniere_date_de_prise
+        }
+class RendezVous:
+    medecinId: int
+    patientId: int
+    date: Date
+    heure: int
+    description: str
+    duree: int
+
+    def to_dict(self):
+        return {
+            "medecinId": self.medecinId,
+            "patientId": self.patientId,
+            "date": self.date,
+            "heure": self.heure,
+            "description": self.description,
+            "duree": self.duree
         }

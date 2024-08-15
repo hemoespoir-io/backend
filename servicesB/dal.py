@@ -21,7 +21,32 @@ def connect_db(config):
 
 
 class DAOpatients:
-   
+  
+    @staticmethod
+    def rendez_vous( config ,medecinId,  startDate, endDate):
+        con, error = connect_db(config)
+        if con is None:
+            return None, "Connection to database failed: %s" % (error)
+        
+        try:
+            with con.cursor(dictionary=True) as cur:
+                query = """
+                SELECT * FROM rendez_vous 
+                WHERE medecinId = %s AND date BETWEEN %s AND %s
+            """
+                
+                cur.execute(query, (medecinId,startDate, endDate ))
+                rendez_vous=cur.fetchall()
+                con.close()
+                return rendez_vous, None
+        
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None, str(e)
+        finally:
+            con.close()
+     ##
+    
     @staticmethod
     def logIn( config ,username, password):
         con, error = connect_db(config)
@@ -30,7 +55,7 @@ class DAOpatients:
         
         try:
             with con.cursor(dictionary=True) as cur:
-                query = "SELECT * FROM patient WHERE NomUtilisateur = %s AND Motdepasse = %s"
+                query = "SELECT p.*, mp.medecinId FROM patient p JOIN medecinpatient mp ON p.Id_Patient = mp.patientIdWHERE p.Id_Patient = mp.patientId;"
                 cur.execute(query, (username, password))
                 patient=cur.fetchall()
                 con.close()
@@ -115,8 +140,8 @@ class DAOpatients:
             
     @staticmethod
     def AjouterPatientbyId(cur, con, patient):
-        cur.execute('INSERT INTO patient (Id_Patient, NomUtilisateur, Nomcomplet, DateNaissance, Email, Telephone, Adresse, Motdepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedentMere, AntecedentPere, TypeDeMaladie) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
-                    (patient.Id_Patient, patient.NomUtilisateur, patient.Nomcomplet, patient.DateNaissance, patient.Email, patient.Telephone, patient.Adresse, patient.Motdepasse, patient.image, patient.Groupesanguin, patient.Taille, patient.Poids, patient.Sexe, patient.AntecedentMere, patient.AntecedentPere, patient.TypeDeMaladie))
+        cur.execute('INSERT INTO patient (Id_Patient, NomUtilisateur, Nomcomplet, DateNaissance, Email, Telephone, Adresse, Motdepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedentMere,  TypeDeMaladie) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                    (patient.Id_Patient, patient.NomUtilisateur, patient.Nomcomplet, patient.DateNaissance, patient.Email, patient.Telephone, patient.Adresse, patient.Motdepasse, patient.image, patient.Groupesanguin, patient.Taille, patient.Poids, patient.Sexe, patient.AntecedentMere,  patient.TypeDeMaladie))
         con.commit()
 
     @staticmethod

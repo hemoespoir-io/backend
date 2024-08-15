@@ -1,7 +1,9 @@
-from flask import Flask, make_response,request,jsonify,session
-from services import  medecinservices, patientServices
+from datetime import datetime, timedelta
+from flask import Flask, json, make_response,request,jsonify,session
+from services import   medecinservices, patientServices
 from flask_cors import CORS
-
+import logging
+from datetime import datetime
 app = Flask(__name__)
 
 app.config.from_envvar('APP_SETTINGS')
@@ -380,7 +382,7 @@ def delete_medecin():
     if result is None:
         return jsonify({"error": message}), 500
     return jsonify({"message": message}), 200"""
-CORS(app)  # Permettre CORS pour toutes les routes
+CORS(app)  
 
 
 
@@ -388,13 +390,12 @@ CORS(app)  # Permettre CORS pour toutes les routes
 
 @app.route('/fichemedical', methods=['GET'])
 def get_patient_details():
-    #parametres dee requettes
+    
     patient_id = request.args.get('patientid')
     if not patient_id:
         return jsonify({"error": "Missing patient ID"}), 400
-#appel au service 
+
     try:
-        
         details, error = patientServices.FicheMedicale(app.config, int(patient_id))
         if error:
             return jsonify({"serveurerror": error}), 500
@@ -441,5 +442,37 @@ def loginMedecin():
     except ValueError:
         return jsonify({"error": ValueError}), 500
     
+   
+CORS(app) 
+@app.route('/getAppointment', methods=['POST'])
+def getAppointment():
+    data = request.json
+    medecinId = data.get('medecinId')
+    patientId = data.get('patientId')
+    startDate = data.get('startDate')
+    endDate = data.get('endDate')
+    
+    if not medecinId or not patientId or not startDate or not endDate:
+        return jsonify({"error": "Missing required parameters"}), 400
+    
+    try:
+        startDate = datetime.strptime(startDate, "%Y-%m-%d")
+        endDate = datetime.strptime(endDate, "%Y-%m-%d")
+    except ValueError:
+        return jsonify({"error": "Invalid date format, should be YYYY-MM-DD"}), 400
+
+    try:
+        appointment_info, error = patientServices.get_appointement(app.config, medecinId, patientId, startDate, endDate)
+        
+        if error:
+            logging.error(f"Error retrieving appointments: {error}")
+            return jsonify({"servererror": error}), 500
+        
+        return jsonify({"appointments": appointment_info}), 200
+
+    except Exception as e:
+        logging.exception("An unexpected error occurred")
+        return jsonify({"error": "An unexpected error occurred"}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)

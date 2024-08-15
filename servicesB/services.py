@@ -1,6 +1,6 @@
 from dal import DAOpatients, DAOmedicament, DAOmedecin
 from models import patient, Medicament, medecin, medicamentPatients
-from datetime import datetime
+from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from datetime import datetime, date
@@ -13,6 +13,30 @@ from datetime import datetime
 
 class patientServices:
     @staticmethod
+    def get_appointement(config, medecinId, patientId, startDate, endDate):
+        try:
+            print(f"Tentative de recherche de rendez-vous: Medecin ID {medecinId}, Patient ID {patientId}")
+
+            rendez_vous, error = DAOpatients.rendez_vous(config, medecinId, startDate, endDate)
+
+            if error:
+                return None, f"Tentative de recherche de rendez-vous: Medecin ID {medecinId}, Patient ID {patientId}: {error}"
+
+            print(f"Fetched appointments: {rendez_vous}")
+
+            for rdv in rendez_vous:
+                print(f"Processing appointment: {rdv}")            
+                if rdv.get('patientId') == str(patientId):
+                
+                    continue
+                else:
+                    rdv['description'] = ""
+
+            return rendez_vous, None
+        except Exception as e:
+                print(f"Exception: {e}")
+                return None, str(e)
+
     def FicheMedicale(config,patient_id):#
         try:    
             patient, e_patient = DAOpatients.fetch_patient_info_by_Id(config, patient_id)
@@ -45,7 +69,7 @@ class patientServices:
         except Exception as e:
             print(f"Exception: {e}")
             return None, str(e)
-        
+######################
 
 class medecinservices:
     @staticmethod
