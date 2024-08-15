@@ -444,7 +444,7 @@ def loginMedecin():
     
     #####################################
 # Exemple de rendez-vous déjà réservés
-
+CORS(app) 
 @app.route('/getAppointment', methods=['POST'])
 def getAppointment():
     data = request.json
