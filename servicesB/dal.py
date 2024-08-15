@@ -1,4 +1,3 @@
-
 import mysql.connector as mysql
 from mysql.connector import Error
 #from Analyse_de_donnes.testt import Medicament
@@ -56,7 +55,7 @@ class DAOpatients:
         
         try:
             with con.cursor(dictionary=True) as cur:
-                query = "SELECT p.*, mp.medecinId FROM patient p JOIN medecinpatient mp ON p.Id_Patient = mp.patientId;"
+                query = "SELECT p.*, mp.medecinId FROM patient p JOIN medecinpatient mp ON p.Id_Patient = mp.patientIdWHERE p.Id_Patient = mp.patientId;"
                 cur.execute(query, (username, password))
                 patient=cur.fetchall()
                 con.close()
