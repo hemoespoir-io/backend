@@ -5,8 +5,7 @@ import time
 @dataclass
 class patient:
     def __init__(self, Id_Patient, NomUtilisateur, Nomcomplet, DateNaissance, Email, Telephone, 
-                 Adresse, Motdepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedentMere, 
-                 Id_Medecin, TypeDeMaladie):
+                 Adresse, Motdepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedentMere,  TypeDeMaladie):
         self.Id_Patient = Id_Patient
         self.NomUtilisateur = NomUtilisateur
         self.Nomcomplet = Nomcomplet
