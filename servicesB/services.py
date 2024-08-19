@@ -28,14 +28,17 @@ class patientServices:
                 print(f"Processing appointment: {rdv}")            
                 if rdv.get('patientId') == str(patientId):
                 
-                    continue
+                    if 'description' not in rdv or not rdv['description']:
+                        rdv['description'] = "Rendez-vous avec le patient"
                 else:
-                    rdv['description'] = ""
+               
+                    if 'description' not in rdv:
+                        rdv['description'] = "Autre rendez-vous"
 
             return rendez_vous, None
         except Exception as e:
-                print(f"Exception: {e}")
-                return None, str(e)
+            print(f"Exception: {e}")
+            return None, str(e)
 
     def FicheMedicale(config,patient_id):#
         try:    

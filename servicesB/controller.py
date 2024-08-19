@@ -428,19 +428,25 @@ def loginMedecin():
     data = request.json
     username = data.get('username')
     password = data.get('password')
+    
     if not username or not password:
         return jsonify({"error": "Missing username or password"}), 400
     
     try:
+        print(f"Attempting login with username: {username} and password: {password}")
         medecin_info, error = medecinservices.logInMedecin(app.config, username, password)
         
-        if error:
-            return jsonify({"serveurerror": error}), 500
+        if error or not medecin_info:
+            print("Login failed: Incorrect username or password.")
+            return jsonify({"error": "Nom d'utilisateur ou mot de passe incorrect!"}), 401
         
-        return jsonify({"medecin": medecin_info}), 200
+        print(f"Login successful for user: {username}")
+        return jsonify({"medecins": medecin_info}), 200
 
-    except ValueError:
-        return jsonify({"error": ValueError}), 500
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
     
    
 CORS(app) 
