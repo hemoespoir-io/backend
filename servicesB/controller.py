@@ -10,9 +10,7 @@ app = Flask(__name__)
 app.config.from_envvar('APP_SETTINGS')
 
 
-#Les routes
 
-#Avoir une page qui sa form method=POST la methode POST
 
 """
 @app.route('/add_patient', methods=['POST'])
@@ -481,7 +479,7 @@ def getAppointment():
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
 ###
-@app.route('/getAppointmentM', methods=['POST'])
+@app.route('/getAppointmentMedecin', methods=['POST'])
 def getAppointmentM():
     data = request.json
     medecinId = data.get('medecinId')
