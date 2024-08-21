@@ -6,7 +6,7 @@ import time
 class patient:
     def __init__(self, Id_Patient, NomUtilisateur, Nomcomplet, DateNaissance, Email, Telephone, 
                  Adresse, Motdepasse, image, Groupesanguin, Taille, Poids, Sexe, AntecedentMere, 
-                  Id_Medecin,TypeDeMaladie):
+                  TypeDeMaladie):
         self.Id_Patient = Id_Patient
         self.NomUtilisateur = NomUtilisateur
         self.Nomcomplet = Nomcomplet
@@ -21,7 +21,7 @@ class patient:
         self.Poids = Poids
         self.Sexe = Sexe
         self.AntecedentMere = AntecedentMere
-        self.Id_Medecin=Id_Medecin
+
         self.TypeDeMaladie = TypeDeMaladie
         
     def to_dict(self):
@@ -40,7 +40,7 @@ class patient:
             "Poids": self.Poids,
             "Sexe": self.Sexe,
             "AntecedentMere": self.AntecedentMere,
-            "Id_Medecin": self.Id_Medecin,  
+          
             "TypeDeMaladie": self.TypeDeMaladie
         }
     

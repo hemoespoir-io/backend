@@ -4,6 +4,7 @@ from services import   medecinservices, patientServices
 from flask_cors import CORS
 import logging
 from datetime import datetime
+from services import   medecinservices, patientServices
 app = Flask(__name__)
 
 app.config.from_envvar('APP_SETTINGS')
@@ -479,6 +480,36 @@ def getAppointment():
     except Exception as e:
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
+###
+@app.route('/getAppointmentM', methods=['POST'])
+def getAppointmentM():
+    data = request.json
+    medecinId = data.get('medecinId')
+    startDate = data.get('startDate')
+    endDate = data.get('endDate')
+    
+    if not medecinId or not startDate or not endDate:
+        return jsonify({"error": "Missing required parameters"}), 400
+    
+    try:
+        startDate = datetime.strptime(startDate, "%Y-%m-%d")
+        endDate = datetime.strptime(endDate, "%Y-%m-%d")
+    except ValueError:
+        return jsonify({"error": "Invalid date format, should be YYYY-MM-DD"}), 400
 
+    try:
+        appointment_info, error = medecinservices.get_appointement(app.config, medecinId, startDate, endDate)
+        
+        if error:
+            logging.error(f"Error retrieving appointments: {error}")
+            return jsonify({"servererror": error}), 500
+        
+        return jsonify({"appointments": appointment_info}), 200
+
+    except Exception as e:
+        logging.exception("An unexpected error occurred")
+        return jsonify({"error": "An unexpected error occurred"}), 500
+
+    return jsonify(rendez_vous), 200
 if __name__ == '__main__':
     app.run(debug=True)

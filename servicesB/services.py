@@ -76,7 +76,6 @@ class patientServices:
 
 class medecinservices:
     @staticmethod
-
     def logInMedecin(config, username, password):
         try:
             print(f"Tentative de connexion pour l'utilisateur: {username}")
@@ -88,6 +87,28 @@ class medecinservices:
         except Exception as e:
             print(f"Exception: {e}")
             return None, str(e)
+    @staticmethod
+    def get_appointement(config, medecinId, startDate, endDate):
+        try:
+            rendez_vous, error = DAOmedecin.rendez_vous(config, medecinId, startDate, endDate)
+
+            if error:
+                return None, f"Tentative de recherche de rendez-vous: Medecin ID {medecinId}: {error}"
+
+            for rdv in rendez_vous:
+                if rdv.get('medecinId') == str(medecinId):
+                    if 'description' not in rdv or not rdv['description']:
+                        rdv['description'] = "Rendez-vous avec le patient"
+                else:
+                    if 'description' not in rdv:
+                        rdv['description'] = "Autre rendez-vous"
+
+            return rendez_vous, None
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None, str(e)
+
+# Endpoint pour récupérer les rendez-vous
 """ @staticmethod
     def get_patient_byID(patient_id):#
         con = connect_db()

@@ -55,7 +55,7 @@ class DAOpatients:
         
         try:
             with con.cursor(dictionary=True) as cur:
-                query = "SELECT * FROM patient WHERE NomUtilisateur = %s AND Motdepasse = %s"
+                query = "SELECT p.*, mp.medecinIdFROM patient p INNER JOIN medecinpatient mp ON p.Id_Patient = mp.patientId;"
                 cur.execute(query, (username, password))
                 patient=cur.fetchall()
                 con.close()
@@ -291,6 +291,30 @@ class DAOmedecin:
             return None, str(e)
         finally:
             con.close()
+    @staticmethod
+    def rendez_vous(config, medecinId, startDate, endDate):
+        con, error = connect_db(config)
+        if con is None:
+            return None, "Connection to database failed: %s" % (error)
+        
+        try:
+            with con.cursor(dictionary=True) as cur:
+                query = """
+                SELECT * FROM rendez_vous 
+                WHERE medecinId = %s AND date BETWEEN %s AND %s
+            """
+                
+                cur.execute(query, (medecinId, startDate, endDate))
+                rendez_vous = cur.fetchall()
+                con.close()
+                return rendez_vous, None
+        
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None, str(e)
+        finally:
+            con.close()
+     ##
 @staticmethod
 def Ajouter_medecin(cur, con, nom: str, spe: str, idp: int, image: str):
         cur.execute('INSERT INTO medecin (nom, specialite, Id_Medecin, image,numero_urgence) VALUES (%s, %s, %s, %s,%s)',
