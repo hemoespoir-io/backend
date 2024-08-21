@@ -55,7 +55,7 @@ class DAOpatients:
         
         try:
             with con.cursor(dictionary=True) as cur:
-                query = "SELECT * FROM patient WHERE NomUtilisateur = %s AND Motdepasse = %s"
+                query = "SELECT p.*, mp.medecinId FROM patient p INNER JOIN medecinpatient mp ON p.Id_Patient = mp.patientId WHERE p.NomUtilisateur = %s AND p.Motdepasse = %s;"
                 cur.execute(query, (username, password))
                 patient=cur.fetchall()
                 con.close()
