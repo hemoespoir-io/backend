@@ -449,7 +449,7 @@ def loginMedecin():
     
    
 CORS(app) 
-@app.route('/getAppointment', methods=['GET'])
+@app.route('/getAppointment', methods=['POST'])
 def getAppointment():
     data = request.json
     medecinId = data.get('medecinId')
@@ -479,7 +479,7 @@ def getAppointment():
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
 ###
-@app.route('/getAppointmentMedecin', methods=['GEt'])
+@app.route('/getAppointmentMedecin', methods=['POST'])
 def getAppointmentM():
     data = request.json
     medecinId = data.get('medecinId')
@@ -508,6 +508,59 @@ def getAppointmentM():
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
-    return jsonify(rendez_vous), 200
+@app.route('/rendez_vous', methods=['POST'])
+def prendre_rendez_vous():
+    # Récupérer les données de la requête
+    data = request.json
+    id_medecin = data.get('id_medecin')
+    id_patient = data.get('id_patient')
+    date = data.get('date')
+    duree = data.get('duree')
+    description = data.get('description')
+
+    # Validation des données
+    if not id_medecin or not id_patient or not date or not duree or not description:
+        return jsonify({'error': 'Tous les champs sont obligatoires.'}), 400
+
+    # Créer un rendez-vous simulé
+    rendez_vous = {
+        'id_medecin': id_medecin,
+        'id_patient': id_patient,
+        'date': date,
+        'duree': duree,
+        'description': description
+    }
+
+    # Retourner la réponse sans stocker les données
+    return jsonify({'message': 'Rendez-vous pris avec succès.', 'rendez_vous': rendez_vous}), 201
+
+def entree_manuelle():
+    # Entrée manuelle des informations
+    id_medecin = input("Entrez l'ID du médecin : ")
+    id_patient = input("Entrez l'ID du patient : ")
+    date = input("Entrez la date du rendez-vous (ex : 2024-08-22T14:00:00) : ")
+    duree = input("Entrez la durée du rendez-vous (en minutes) : ")
+    description = input("Entrez la description du rendez-vous : ")
+
+    # Validation des données
+    if not id_medecin or not id_patient or not date or not duree or not description:
+        print("Erreur : Tous les champs sont obligatoires.")
+    else:
+        # Affichage des informations du rendez-vous
+        rendez_vous = {
+            'id_medecin': id_medecin,
+            'id_patient': id_patient,
+            'date': date,
+            'duree': duree,
+            'description': description
+        }
+
+        print("\nRendez-vous pris avec succès ! Voici les détails :")
+        print(f"ID Médecin : {rendez_vous['id_medecin']}")
+        print(f"ID Patient : {rendez_vous['id_patient']}")
+        print(f"Date : {rendez_vous['date']}")
+        print(f"Durée : {rendez_vous['duree']} minutes")
+        print(f"Description : {rendez_vous['description']}")
+
 if __name__ == '__main__':
     app.run(debug=True)
