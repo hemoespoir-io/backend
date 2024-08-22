@@ -459,7 +459,7 @@ def getAppointment():
     
     if not medecinId or not patientId or not startDate or not endDate:
         return jsonify({"error": "Missing required parameters"}), 400
-    
+
     try:
         startDate = datetime.strptime(startDate, "%Y-%m-%d")
         endDate = datetime.strptime(endDate, "%Y-%m-%d")
