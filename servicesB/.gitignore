@@ -57,4 +57,4 @@ docs/_build/
 target/
 *ser.py
 # 
-package-lock.json
+../package-lock.json

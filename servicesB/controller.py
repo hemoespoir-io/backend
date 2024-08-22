@@ -4,14 +4,13 @@ from services import   medecinservices, patientServices
 from flask_cors import CORS
 import logging
 from datetime import datetime
+from services import   medecinservices, patientServices
 app = Flask(__name__)
 
 app.config.from_envvar('APP_SETTINGS')
 
 
-#Les routes
 
-#Avoir une page qui sa form method=POST la methode POST
 
 """
 @app.route('/add_patient', methods=['POST'])
@@ -428,23 +427,29 @@ def loginMedecin():
     data = request.json
     username = data.get('username')
     password = data.get('password')
+    
     if not username or not password:
         return jsonify({"error": "Missing username or password"}), 400
     
     try:
+        print(f"Attempting login with username: {username} and password: {password}")
         medecin_info, error = medecinservices.logInMedecin(app.config, username, password)
         
-        if error:
-            return jsonify({"serveurerror": error}), 500
+        if error or not medecin_info:
+            print("Login failed: Incorrect username or password.")
+            return jsonify({"error": "Nom d'utilisateur ou mot de passe incorrect!"}), 401
         
-        return jsonify({"medecin": medecin_info}), 200
+        print(f"Login successful for user: {username}")
+        return jsonify({"medecins": medecin_info}), 200
 
-    except ValueError:
-        return jsonify({"error": ValueError}), 500
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
     
    
 CORS(app) 
-@app.route('/getAppointment', methods=['POST'])
+@app.route('/getAppointment', methods=['GET'])
 def getAppointment():
     data = request.json
     medecinId = data.get('medecinId')
@@ -462,7 +467,36 @@ def getAppointment():
         return jsonify({"error": "Invalid date format, should be YYYY-MM-DD"}), 400
 
     try:
-        appointment_info, error = patientServices.get_appointement(app.config, medecinId, patientId, startDate, endDate)
+        appointment_info, error = patientServices.get_medecin_appointement_by_patientid(app.config, medecinId, patientId, startDate, endDate)
+        
+        if error:
+            logging.error(f"Error retrieving appointments: {error}")
+            return jsonify({"servererror": error}), 500
+        
+        return jsonify({"appointments": appointment_info}), 200
+
+    except Exception as e:
+        logging.exception("An unexpected error occurred")
+        return jsonify({"error": "An unexpected error occurred"}), 500
+###
+@app.route('/getAppointmentMedecin', methods=['GEt'])
+def getAppointmentM():
+    data = request.json
+    medecinId = data.get('medecinId')
+    startDate = data.get('startDate')
+    endDate = data.get('endDate')
+    
+    if not medecinId or not startDate or not endDate:
+        return jsonify({"error": "Missing required parameters"}), 400
+    
+    try:
+        startDate = datetime.strptime(startDate, "%Y-%m-%d")
+        endDate = datetime.strptime(endDate, "%Y-%m-%d")
+    except ValueError:
+        return jsonify({"error": "Invalid date format, should be YYYY-MM-DD"}), 400
+
+    try:
+        appointment_info, error = medecinservices.get_medecin_appointement(app.config, medecinId, startDate, endDate)
         
         if error:
             logging.error(f"Error retrieving appointments: {error}")
@@ -474,5 +508,6 @@ def getAppointment():
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
+    return jsonify(rendez_vous), 200
 if __name__ == '__main__':
     app.run(debug=True)
