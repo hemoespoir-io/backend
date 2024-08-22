@@ -449,7 +449,7 @@ def loginMedecin():
     
    
 CORS(app) 
-@app.route('/getAppointment', methods=['POST'])
+@app.route('/getAppointment', methods=['GET'])
 def getAppointment():
     data = request.json
     medecinId = data.get('medecinId')
@@ -467,7 +467,7 @@ def getAppointment():
         return jsonify({"error": "Invalid date format, should be YYYY-MM-DD"}), 400
 
     try:
-        appointment_info, error = patientServices.get_appointement(app.config, medecinId, patientId, startDate, endDate)
+        appointment_info, error = patientServices.get_medecin_appointement_by_patientid(app.config, medecinId, patientId, startDate, endDate)
         
         if error:
             logging.error(f"Error retrieving appointments: {error}")
@@ -479,7 +479,7 @@ def getAppointment():
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
 ###
-@app.route('/getAppointmentMedecin', methods=['POST'])
+@app.route('/getAppointmentMedecin', methods=['GET'])
 def getAppointmentM():
     data = request.json
     medecinId = data.get('medecinId')
@@ -496,7 +496,7 @@ def getAppointmentM():
         return jsonify({"error": "Invalid date format, should be YYYY-MM-DD"}), 400
 
     try:
-        appointment_info, error = medecinservices.get_appointement(app.config, medecinId, startDate, endDate)
+        appointment_info, error = medecinservices.get_medecin_appointement(app.config, medecinId, startDate, endDate)
         
         if error:
             logging.error(f"Error retrieving appointments: {error}")

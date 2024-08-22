@@ -13,11 +13,11 @@ from datetime import datetime
 
 class patientServices:
     @staticmethod
-    def get_appointement(config, medecinId, patientId, startDate, endDate):
+    def get_medecin_appointement_by_patientid(config, medecinId, patientId, startDate, endDate):
         try:
             print(f"Tentative de recherche de rendez-vous: Medecin ID {medecinId}, Patient ID {patientId}")
 
-            rendez_vous, error = DAOpatients.rendez_vous(config, medecinId, startDate, endDate)
+            rendez_vous, error = DAOmedecin.get_medecin_appointement(config, medecinId, startDate, endDate)
 
             if error:
                 return None, f"Tentative de recherche de rendez-vous: Medecin ID {medecinId}, Patient ID {patientId}: {error}"
@@ -25,10 +25,7 @@ class patientServices:
             print(f"Fetched appointments: {rendez_vous}")
 
             for rdv in rendez_vous:
-                print(f"Processing appointment: {rdv}")   
-                print(patientId)     
-                patient_id_str = str(rdv.get('patientId'))
-                print(patient_id_str)   
+                print(f"Processing appointment: {rdv}")    
                 if str(rdv.get('patientId')) != (patientId):
                     rdv['description'] = ""
 
@@ -85,19 +82,10 @@ class medecinservices:
             print(f"Exception: {e}")
             return None, str(e)
     @staticmethod
-    def get_appointement(config, medecinId, startDate, endDate):
+    def get_medecin_appointement(config, medecinId, startDate, endDate):
         try:
-            rendez_vous, error = DAOmedecin.rendez_vous(config, medecinId, startDate, endDate)
+            rendez_vous, error = DAOmedecin.get_medecin_appointement(config, medecinId, startDate, endDate)
 
-            
-
-            for rdv in rendez_vous:
-                if rdv.get('medecinId') == str(medecinId):
-                    if 'description' not in rdv or not rdv['description']:
-                        rdv['description'] = "Rendez-vous avec le patient"
-                else:
-                    if 'description' not in rdv:
-                        rdv['description'] = "Autre rendez-vous"
 
             return rendez_vous, None
         except Exception as e:

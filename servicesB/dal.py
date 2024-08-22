@@ -22,29 +22,7 @@ def connect_db(config):
 
 class DAOpatients:
   
-    @staticmethod
-    def rendez_vous( config ,medecinId,  startDate, endDate):
-        con, error = connect_db(config)
-        if con is None:
-            return None, "Connection to database failed: %s" % (error)
-        
-        try:
-            with con.cursor(dictionary=True) as cur:
-                query = """
-                SELECT * FROM rendez_vous 
-                WHERE medecinId = %s AND date BETWEEN %s AND %s
-            """
-                
-                cur.execute(query, (medecinId,startDate, endDate ))
-                rendez_vous=cur.fetchall()
-                con.close()
-                return rendez_vous, None
-        
-        except Exception as e:
-            print(f"Exception: {e}")
-            return None, str(e)
-        finally:
-            con.close()
+   
      ##
     
     @staticmethod
@@ -292,7 +270,7 @@ class DAOmedecin:
         finally:
             con.close()
     @staticmethod
-    def rendez_vous(config, medecinId, startDate, endDate):
+    def get_medecin_appointement(config, medecinId, startDate, endDate):
         con, error = connect_db(config)
         if con is None:
             return None, "Connection to database failed: %s" % (error)
