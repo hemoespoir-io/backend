@@ -22,9 +22,7 @@ def connect_db(config):
 
 class DAOpatients:
   
-   
      ##
-    
     @staticmethod
     def logIn( config ,username, password):
         con, error = connect_db(config)
