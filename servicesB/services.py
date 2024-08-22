@@ -13,6 +13,24 @@ from datetime import datetime
 
 class patientServices:
     @staticmethod
+    def ajouter_rendez_vous(config,medecinId,patientId,date,heure,description,duree):
+        try:
+            print(f"Tentative de prendre  rendez-vous: Medecin ID {medecinId}, Patient ID {patientId},date {date},heure{heure},description{description}, description{duree}")
+
+            rendez_vous, error = DAOpatients.prendre_rendez_vous(config,medecinId,patientId,date,heure,description,duree)
+
+            if error:
+                return None, f"Tentative de prise de rendez-vous:  Medecin ID {medecinId}, Patient ID {patientId},date {date},heure{heure},description{description}, description{duree}: {error}"
+
+            print(f"prise de rdv: {rendez_vous}")
+
+           
+            return rendez_vous, None
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None, str(e)
+
+    @staticmethod
     def get_medecin_appointement_by_patientid(config, medecinId, patientId, startDate, endDate):
         try:
             print(f"Tentative de recherche de rendez-vous: Medecin ID {medecinId}, Patient ID {patientId}")
@@ -82,7 +100,7 @@ class medecinservices:
             print(f"Exception: {e}")
             return None, str(e)
     @staticmethod
-    def get_medecin_appointement(config, medecinId, startDate, endDate):
+    def get_medecin_appointementS(config, medecinId, startDate, endDate):
         try:
             rendez_vous, error = DAOmedecin.get_medecin_appointement(config, medecinId, startDate, endDate)
 
@@ -91,7 +109,7 @@ class medecinservices:
         except Exception as e:
             print(f"Exception: {e}")
             return None, str(e)
-
+    
 # Endpoint pour récupérer les rendez-vous
 """ @staticmethod
     def get_patient_byID(patient_id):#
