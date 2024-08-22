@@ -479,7 +479,7 @@ def getAppointment():
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
 ###
-@app.route('/getAppointmentMedecin', methods=['GET'])
+@app.route('/getAppointmentMedecin', methods=['GEt'])
 def getAppointmentM():
     data = request.json
     medecinId = data.get('medecinId')
