@@ -12,7 +12,18 @@ from dal import DAOpatients
 from datetime import datetime
 from datetime import timedelta
 class patientServices:
-    
+    @staticmethod
+    def delete_rendez_vous(config, medecinId, patientId, date, heure):
+        try:
+            print(f"Tentative de suppression pour l'utilisateur: {medecinId}")
+            patient, error = DAOpatients.delete_rendez_vous(config, medecinId, patientId, date, heure)
+            if error:
+                return None, "Tentative de connexion pour l'utilisateur: " + str(medecinId) + ": " + str(error)
+            
+            return patient , None
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None, str(e)
     @staticmethod
     def add_rendez_vous(config, medecinId, patientId, date, heure, description, duree):
         try:
@@ -71,7 +82,7 @@ class patientServices:
         except Exception as e:
             print(f"Exception: {e}")
             return None, str(e)
-        
+    
     @staticmethod
     def logIn(config ,username, password):
         try:

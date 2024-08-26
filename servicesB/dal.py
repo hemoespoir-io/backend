@@ -76,7 +76,40 @@ class DAOpatients:
         finally:
             if con:
                 con.close()
-     ##
+     ##    
+    @staticmethod
+    def delete_rendez_vous(config, medecinId, patientId, date, heure):
+        con, error = connect_db(config)
+        print("=======================")
+        if con is None:
+            return None, "Connection to database failed: %s" % (error)
+
+        try:
+            with con.cursor(dictionary=True) as cur:
+               
+                delete_query = """ 
+                DELETE FROM rendez_vous
+                WHERE medecinId = %s
+                AND patientId = %s
+                AND date = %s
+                AND heure = %s;
+                """
+                cur.execute(delete_query, (medecinId, patientId, date, heure))
+                con.commit()  
+
+            
+                if cur.rowcount > 0:
+                    return "Rendez-vous supprimé avec succès.", None
+                else:
+                    return None, "Rendez-vous non trouvé."
+
+        except Exception as e:
+            return None, "Une erreur est survenue : %s" % str(e)
+
+        finally:
+            if con:
+                con.close()
+
     @staticmethod
     def logIn( config ,username, password):
         con, error = connect_db(config)
