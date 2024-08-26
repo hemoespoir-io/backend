@@ -10,24 +10,24 @@ from models import patient, Medicament, medecin, medicamentPatients, medecinPati
 from datetime import datetime
 from dal import DAOpatients
 from datetime import datetime
-
+from datetime import timedelta
 class patientServices:
+    
     @staticmethod
-    def ajouter_rendez_vous(config,medecinId,patientId,date,heure,description,duree):
+    def add_rendez_vous(config, medecinId, patientId, date, heure, description, duree):
         try:
-            print(f"Tentative de prendre  rendez-vous: Medecin ID {medecinId}, Patient ID {patientId},date {date},heure{heure},description{description}, description{duree}")
-
-            rendez_vous, error = DAOpatients.prendre_rendez_vous(config,medecinId,patientId,date,heure,description,duree)
-
+            heure_fin = (datetime.strptime(heure, '%H:%M') + timedelta(minutes=duree)).time()
+            print(heure_fin)
+            rendez_vous, error = DAOpatients.get_rendez_vous(config, medecinId, date, heure, heure_fin)
             if error:
-                return None, f"Tentative de prise de rendez-vous:  Medecin ID {medecinId}, Patient ID {patientId},date {date},heure{heure},description{description}, description{duree}: {error}"
-
-            print(f"prise de rdv: {rendez_vous}")
-
-           
-            return rendez_vous, None
+                return None, error
+        
+            if not rendez_vous or len(rendez_vous) == 0:
+                new_rendez_vous = DAOpatients.add_rendez_vous(config, medecinId, patientId, date, heure, description, duree)
+                return new_rendez_vous, None
+            else:
+                return None, "Rendez-vous déjà pris"
         except Exception as e:
-            print(f"Exception: {e}")
             return None, str(e)
 
     @staticmethod
@@ -100,12 +100,21 @@ class medecinservices:
             print(f"Exception: {e}")
             return None, str(e)
     @staticmethod
-    def get_medecin_appointementS(config, medecinId, startDate, endDate):
+    def get_medecin_appointement(config, medecinId, startDate, endDate):
         try:
             rendez_vous, error = DAOmedecin.get_medecin_appointement(config, medecinId, startDate, endDate)
 
+            if not rendez_vous:
+                return rendez_vous, None
+            unique_dates = set()
+            for rv in rendez_vous:
+                rv_date = rv['date']  
+                if rv_date in unique_dates:
+                    raise ValueError(f"Duplicate appointment date found for medecinId {medecinId} on date {rv_date}")
+                unique_dates.add(rv_date)
 
             return rendez_vous, None
+
         except Exception as e:
             print(f"Exception: {e}")
             return None, str(e)

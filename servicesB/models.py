@@ -125,4 +125,3 @@ class RendezVous:
             "duree": self.duree
         }
 
-

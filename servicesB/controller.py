@@ -449,7 +449,7 @@ def loginMedecin():
     
    
 CORS(app) 
-@app.route('/getAppointment', methods=['GET'])
+@app.route('/getAppointment', methods=['POST'])
 def getAppointment():
     data = request.json
     medecinId = data.get('medecinId')
@@ -479,7 +479,7 @@ def getAppointment():
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
 ###
-@app.route('/getAppointmentMedecin', methods=['GET'])
+@app.route('/getAppointmentMedecin', methods=['POST'])
 def getAppointmentM():
     data = request.json
     medecinId = data.get('medecinId')
@@ -496,7 +496,7 @@ def getAppointmentM():
         return jsonify({"error": "Invalid date format, should be YYYY-MM-DD"}), 400
 
     try:
-        appointment_info, error = medecinservices.get_medecin_appointementS(app.config, medecinId, startDate, endDate)
+        appointment_info, error = medecinservices.get_medecin_appointement(app.config, medecinId, startDate, endDate)
         
         if error:
             logging.error(f"Error retrieving appointments: {error}")
@@ -507,33 +507,57 @@ def getAppointmentM():
     except Exception as e:
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
-
-@app.route('/rendez_vous', methods=['POST'])
-def prendre_rendez_vous():
     
-    data = request.json
-    id_medecin = data.get('id_medecin')
-    id_patient = data.get('id_patient')
-    date = data.get('date')
-    duree = data.get('duree')
-    description = data.get('description')
+@app.route('/api/rendezvous', methods=['POST'])
+def add_rendezvous():
+    try:
+        data = request.json
+        print("Type de 'data' reçu:", type(data))
+        print("Contenu de 'data':", data)
 
-   
-    if not id_medecin or not id_patient or not date or not duree or not description:
-        return jsonify({'error': 'Tous les champs sont obligatoires.'}), 400
+        if not isinstance(data, dict):
+            return jsonify({"error": "Invalid JSON format, expected a dictionary"}), 400
 
-    
-    rendez_vous = {
-        'id_medecin': id_medecin,
-        'id_patient': id_patient,
-        'date': date,
-        'duree': duree,
-        'description': description
-    }
+        config = data.get('config')
+        print("Config:", config)
+        medecinId = data.get('medecinId')
+        print("MedecinId:", medecinId)
+        patientId = data.get('patientId')
+        print("PatientId:", patientId)
+        date = data.get('date')
+        print("Date:", date)
+        heure = data.get('heure')
+        print("Heure:", heure)
+        description = data.get('description')
+        print("Description:", description)
+        duree = data.get('duree')
+        print("Duree:", duree)
 
-    
-    return jsonify({'message': 'Rendez-vous pris avec succès.', 'rendez_vous': rendez_vous}), 201
+        # Valider les champs requis
+        if not date or not heure:
+            return jsonify({"error": "Date and Heure are required"}), 400
 
+        if duree is None:
+            return jsonify({"error": "Duree is required and must be a number"}), 400
+
+        try:
+            datetime.strptime(date, '%Y-%m-%d')
+            datetime.strptime(heure, '%H:%M')
+            duree = int(duree)  # Assurez-vous que 'duree' est un entier
+        except ValueError as e:
+            return jsonify({"error": f"Invalid input: {str(e)}"}), 400
+
+        # Traiter les données valides
+        rendezvous, error = patientServices.add_rendez_vous(config, medecinId, patientId, date, heure, description, duree)
+
+        if error:
+            return jsonify({"error": error}), 400
+
+        return jsonify({"rendezvous": rendezvous}), 201
+
+    except Exception as e:
+        print("Exception occurred:", e)
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

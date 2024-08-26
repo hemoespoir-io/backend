@@ -22,25 +22,57 @@ def connect_db(config):
 
 class DAOpatients:
     @staticmethod
-    def prendre_rendez_vous(config,medecinId,patientId,date,heure,description,duree):
+    def get_rendez_vous(config, medecinId, date, startHour, endHour):
         con, error = connect_db(config)
+        print("=======================")
         if con is None:
             return None, "Connection to database failed: %s" % (error)
-    
+
         try:
             with con.cursor(dictionary=True) as cur:
-                query = """
-                    INSERT INTO rendez_vous (medecinId, patientId, date, heure, description, duree) 
-                    VALUES (%s, %s, %s, %s, %s, %s);
+                check_query = """ 
+                SELECT * FROM rendez_vous 
+                WHERE medecinId = %s AND date = %s 
+                AND heure BETWEEN %s AND %s;
                 """
-                cur.execute(query, (medecinId, patientId, date, heure,description, duree))
-                con.commit()  
-                return "Appointment successfully booked", None
-    
+                cur.execute(check_query, (medecinId, date, startHour, endHour))
+                rendez_vous = cur.fetchone()
+
+                if rendez_vous:
+                    return rendez_vous, None
+                else:
+                    return None, "Rendez_vous non trouvee."
         except Exception as e:
             print(f"Exception: {e}")
             return None, str(e)
-    
+        finally:
+            if con:
+                con.close()
+    @staticmethod
+    def add_rendez_vous(config, medecinId, patientId, date, heure, description, duree):
+        con, error = connect_db(config)
+        if con is None:
+            return None, "Connection to database failed: %s" % (error)
+
+        try:
+            with con.cursor(dictionary=True) as cur:
+               
+                query = """ 
+                     INSERT INTO rendez_vous (medecinId, patientId, date, heure, duree, description)
+            VALUES (%s, %s, %s, %s, %s, %s);
+                """
+                cur.execute(query, (medecinId, patientId, date, heure, duree, description))
+                rendez_vous = cur.fetchone()
+
+                if rendez_vous:
+                    return rendez_vous, None
+                else:
+                    return None, "Insertion non trouvee."
+
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None, str(e)
+
         finally:
             if con:
                 con.close()
