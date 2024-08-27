@@ -459,7 +459,7 @@ def getAppointment():
     
     if not medecinId or not patientId or not startDate or not endDate:
         return jsonify({"error": "Missing required parameters"}), 400
-
+    
     try:
         startDate = datetime.strptime(startDate, "%Y-%m-%d")
         endDate = datetime.strptime(endDate, "%Y-%m-%d")
@@ -507,31 +507,22 @@ def getAppointmentM():
     except Exception as e:
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
-    
+    ###############################
 @app.route('/api/rendezvous', methods=['POST'])
 def add_rendezvous():
     try:
         data = request.json
-        print("Type de 'data' reçu:", type(data))
-        print("Contenu de 'data':", data)
 
         if not isinstance(data, dict):
             return jsonify({"error": "Invalid JSON format, expected a dictionary"}), 400
 
         config = data.get('config')
-        print("Config:", config)
         medecinId = data.get('medecinId')
-        print("MedecinId:", medecinId)
         patientId = data.get('patientId')
-        print("PatientId:", patientId)
         date = data.get('date')
-        print("Date:", date)
         heure = data.get('heure')
-        print("Heure:", heure)
         description = data.get('description')
-        print("Description:", description)
         duree = data.get('duree')
-        print("Duree:", duree)
 
         # Valider les champs requis
         if not date or not heure:
@@ -556,8 +547,7 @@ def add_rendezvous():
         return jsonify({"rendezvous": rendezvous}), 201
 
     except Exception as e:
-        print("Exception occurred:", e)
-        return jsonify({"error": str(e)}), 500
-    
+        return jsonify({"error": str(e)}), 500####################################
+
 if __name__ == '__main__':
     app.run(debug=True)

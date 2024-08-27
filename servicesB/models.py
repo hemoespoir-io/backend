@@ -124,4 +124,3 @@ class RendezVous:
             "description": self.description,
             "duree": self.duree
         }
-

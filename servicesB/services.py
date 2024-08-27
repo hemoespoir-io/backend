@@ -10,37 +10,8 @@ from models import patient, Medicament, medecin, medicamentPatients, medecinPati
 from datetime import datetime
 from dal import DAOpatients
 from datetime import datetime
-from datetime import timedelta
-class patientServices:
-    @staticmethod
-    def delete_rendez_vous(config, medecinId, patientId, date, heure):
-        try:
-            print(f"Tentative de suppression pour l'utilisateur: {medecinId}")
-            patient, error = DAOpatients.delete_rendez_vous(config, medecinId, patientId, date, heure)
-            if error:
-                return None, "Tentative de connexion pour l'utilisateur: " + str(medecinId) + ": " + str(error)
-            
-            return patient , None
-        except Exception as e:
-            print(f"Exception: {e}")
-            return None, str(e)
-    @staticmethod
-    def add_rendez_vous(config, medecinId, patientId, date, heure, description, duree):
-        try:
-            heure_fin = (datetime.strptime(heure, '%H:%M') + timedelta(minutes=duree)).time()
-            print(heure_fin)
-            rendez_vous, error = DAOpatients.get_rendez_vous(config, medecinId, date, heure, heure_fin)
-            if error:
-                return None, error
-        
-            if not rendez_vous or len(rendez_vous) == 0:
-                new_rendez_vous = DAOpatients.add_rendez_vous(config, medecinId, patientId, date, heure, description, duree)
-                return new_rendez_vous, None
-            else:
-                return None, "Rendez-vous déjà pris"
-        except Exception as e:
-            return None, str(e)
 
+class patientServices:
     @staticmethod
     def get_medecin_appointement_by_patientid(config, medecinId, patientId, startDate, endDate):
         try:
@@ -62,7 +33,26 @@ class patientServices:
         except Exception as e:
             print(f"Exception: {e}")
             return None, str(e)
+    ########################################################################
+    @staticmethod
+    @staticmethod
+    def add_rendez_vous(config, medecinId, patientId, date, heure, description, duree):
+        try:
+            heure_fin = (datetime.strptime(heure, '%H:%M') + timedelta(minutes=duree)).time()
+            rendez_vous, error = DAOpatients.get_rendez_vous(config, medecinId, date, heure, heure_fin)
+            if error:
+                return None, error
 
+            if not rendez_vous:
+                new_rendez_vous, error = DAOpatients.add_rendez_vous(config, medecinId, patientId, date, heure, description, duree)
+                if error:
+                    return None, error
+                return new_rendez_vous, None
+            else:
+                return None, "Rendez-vous déjà pris"
+        except Exception as e:
+            return None, str(e)
+###########################################################
     def FicheMedicale(config,patient_id):#
         try:    
             patient, e_patient = DAOpatients.fetch_patient_info_by_Id(config, patient_id)
@@ -82,7 +72,7 @@ class patientServices:
         except Exception as e:
             print(f"Exception: {e}")
             return None, str(e)
-    
+        
     @staticmethod
     def logIn(config ,username, password):
         try:
@@ -115,21 +105,12 @@ class medecinservices:
         try:
             rendez_vous, error = DAOmedecin.get_medecin_appointement(config, medecinId, startDate, endDate)
 
-            if not rendez_vous:
-                return rendez_vous, None
-            unique_dates = set()
-            for rv in rendez_vous:
-                rv_date = rv['date']  
-                if rv_date in unique_dates:
-                    raise ValueError(f"Duplicate appointment date found for medecinId {medecinId} on date {rv_date}")
-                unique_dates.add(rv_date)
 
             return rendez_vous, None
-
         except Exception as e:
             print(f"Exception: {e}")
             return None, str(e)
-    
+
 # Endpoint pour récupérer les rendez-vous
 """ @staticmethod
     def get_patient_byID(patient_id):#
@@ -678,4 +659,3 @@ if __name__ == "__main__":
 """ patient_info, error = patientServices.FicheMedicale(9)
     print("Informations du patient :", patient_info)
     print("Erreur :", error)"""
-  
