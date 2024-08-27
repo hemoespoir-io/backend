@@ -35,23 +35,20 @@ class patientServices:
             return None, str(e)
     ########################################################################
     @staticmethod
-    @staticmethod
     def add_rendez_vous(config, medecinId, patientId, date, heure, description, duree):
         try:
             heure_fin = (datetime.strptime(heure, '%H:%M') + timedelta(minutes=duree)).time()
             rendez_vous, error = DAOpatients.get_rendez_vous(config, medecinId, date, heure, heure_fin)
             if error:
                 return None, error
-
-            if not rendez_vous:
-                new_rendez_vous, error = DAOpatients.add_rendez_vous(config, medecinId, patientId, date, heure, description, duree)
-                if error:
-                    return None, error
-                return new_rendez_vous, None
+            if rendez_vous == None or len(rendez_vous) == 0:
+                DAOpatients.add_rendez_vous(config, medecinId, patientId, date, heure, description, duree)
+                return "Rendez-vous reserver avec success", None 
             else:
-                return None, "Rendez-vous déjà pris"
+                return None, "Rendez-vous déjà pris" 
         except Exception as e:
-            return None, str(e)
+            return None, e
+    
 ###########################################################
     def FicheMedicale(config,patient_id):#
         try:    

@@ -47,8 +47,8 @@ class DAOpatients:
      ####################################
     @staticmethod
     def get_rendez_vous(config, medecinId, date, startHour, endHour):
+        print("get RDV")
         con, error = connect_db(config)
-        print("=======================")
         if con is None:
             return None, "Connection to database failed: %s" % (error)
 
@@ -62,18 +62,17 @@ class DAOpatients:
                 cur.execute(check_query, (medecinId, date, startHour, endHour))
                 rendez_vous = cur.fetchone()
 
-                if rendez_vous:
-                    return rendez_vous, None
-                else:
-                    return None, "Rendez_vous non trouvee."
+                print(rendez_vous)
+                return rendez_vous, None
         except Exception as e:
             print(f"Exception: {e}")
-            return None, str(e)
+            raise e
         finally:
             if con:
                 con.close()
     @staticmethod
     def add_rendez_vous(config, medecinId, patientId, date, heure, description, duree):
+        print("add RDV")
         con, error = connect_db(config)
         if con is None:
             return None, "Connection to database failed: %s" % (error)
@@ -86,16 +85,11 @@ class DAOpatients:
             VALUES (%s, %s, %s, %s, %s, %s);
                 """
                 cur.execute(query, (medecinId, patientId, date, heure, duree, description))
-                rendez_vous = cur.fetchone()
-
-                if rendez_vous:
-                    return rendez_vous, None
-                else:
-                    return None, "Insertion non trouvee."
+                _ = cur.fetchone()
 
         except Exception as e:
             print(f"Exception: {e}")
-            return None, str(e)
+            raise e
 
         finally:
             if con:

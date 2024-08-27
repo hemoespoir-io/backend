@@ -524,7 +524,7 @@ def add_rendezvous():
         description = data.get('description')
         duree = data.get('duree')
 
-        # Valider les champs requis
+        
         if not date or not heure:
             return jsonify({"error": "Date and Heure are required"}), 400
 
@@ -534,17 +534,17 @@ def add_rendezvous():
         try:
             datetime.strptime(date, '%Y-%m-%d')
             datetime.strptime(heure, '%H:%M')
-            duree = int(duree)  # Assurez-vous que 'duree' est un entier
+            duree = int(duree) 
         except ValueError as e:
             return jsonify({"error": f"Invalid input: {str(e)}"}), 400
 
-        # Traiter les données valides
-        rendezvous, error = patientServices.add_rendez_vous(config, medecinId, patientId, date, heure, description, duree)
+        
+        response, error = patientServices.add_rendez_vous(config, medecinId, patientId, date, heure, description, duree)
 
         if error:
-            return jsonify({"error": error}), 400
+            return jsonify({"error": error}), 500
 
-        return jsonify({"rendezvous": rendezvous}), 201
+        return jsonify(response), 201
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500####################################
