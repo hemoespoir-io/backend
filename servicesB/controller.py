@@ -449,7 +449,7 @@ def loginMedecin():
     
    
 CORS(app) 
-@app.route('/getAppointment', methods=['POST'])
+@app.route('/getAppointment', methods=['GET'])
 def getAppointment():
     data = request.json
     medecinId = data.get('medecinId')
@@ -479,10 +479,10 @@ def getAppointment():
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
 ###
-@app.route('/getAppointmentMedecin', methods=['POST'])
+@app.route('/getAppointmentMedecin', methods=['GET'])
 def getAppointmentM():
     data = request.json
-    medecinId = data.get('medecinId')
+    medecinId = data.get('medecinId') 
     startDate = data.get('startDate')
     endDate = data.get('endDate')
     
