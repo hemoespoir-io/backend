@@ -44,7 +44,7 @@ class DAOpatients:
             return None, str(e)
         finally:
             con.close()
-     ####################################
+     
     @staticmethod
     def get_rendez_vous(config, medecinId, date, startHour, endHour):
         print("get RDV")
@@ -94,8 +94,7 @@ class DAOpatients:
         finally:
             if con:
                 con.close()
-    ####################################################
-    @staticmethod
+        @staticmethod
     def fetch_patient_info_by_Id(config, patient_id):
         con, error = connect_db(config)
         if con is None:
@@ -135,7 +134,7 @@ class DAOpatients:
         finally:
             con.close()
     
-    ##
+    
     @staticmethod
     def fetch_medicaments_details_by_patient_id(config, Id_Patient):
         con = connect_db(config)
@@ -162,8 +161,6 @@ class DAOpatients:
 
 
 
-            ##################################################################################"
-            # "
 
             
     @staticmethod
