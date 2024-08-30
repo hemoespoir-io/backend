@@ -44,8 +44,57 @@ class DAOpatients:
             return None, str(e)
         finally:
             con.close()
-     ##
+     
     @staticmethod
+    def get_rendez_vous(config, medecinId, date, startHour, endHour):
+        print("get RDV")
+        con, error = connect_db(config)
+        if con is None:
+            return None, "Connection to database failed: %s" % (error)
+
+        try:
+            with con.cursor(dictionary=True) as cur:
+                check_query = """ 
+                SELECT * FROM rendez_vous 
+                WHERE medecinId = %s AND date = %s 
+                AND heure BETWEEN %s AND %s;
+                """
+                cur.execute(check_query, (medecinId, date, startHour, endHour))
+                rendez_vous = cur.fetchone()
+
+                print(rendez_vous)
+                return rendez_vous, None
+        except Exception as e:
+            print(f"Exception: {e}")
+            raise e
+        finally:
+            if con:
+                con.close()
+    @staticmethod
+    def add_rendez_vous(config, medecinId, patientId, date, heure, description, duree):
+        print("add RDV")
+        con, error = connect_db(config)
+        if con is None:
+            return None, "Connection to database failed: %s" % (error)
+
+        try:
+            with con.cursor(dictionary=True) as cur:
+               
+                query = """ 
+                     INSERT INTO rendez_vous (medecinId, patientId, date, heure, duree, description)
+            VALUES (%s, %s, %s, %s, %s, %s);
+                """
+                cur.execute(query, (medecinId, patientId, date, heure, duree, description))
+                _ = cur.fetchone()
+
+        except Exception as e:
+            print(f"Exception: {e}")
+            raise e
+
+        finally:
+            if con:
+                con.close()
+        @staticmethod
     def fetch_patient_info_by_Id(config, patient_id):
         con, error = connect_db(config)
         if con is None:
@@ -85,7 +134,7 @@ class DAOpatients:
         finally:
             con.close()
     
-    ##
+    
     @staticmethod
     def fetch_medicaments_details_by_patient_id(config, Id_Patient):
         con = connect_db(config)
@@ -112,8 +161,6 @@ class DAOpatients:
 
 
 
-            ##################################################################################"
-            # "
 
             
     @staticmethod

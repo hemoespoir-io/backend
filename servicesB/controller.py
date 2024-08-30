@@ -479,10 +479,10 @@ def getAppointment():
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
 ###
-@app.route('/getAppointmentMedecin', methods=['GEt'])
+@app.route('/getAppointmentMedecin', methods=['GET'])
 def getAppointmentM():
     data = request.json
-    medecinId = data.get('medecinId')
+    medecinId = data.get('medecinId') 
     startDate = data.get('startDate')
     endDate = data.get('endDate')
     
@@ -507,7 +507,47 @@ def getAppointmentM():
     except Exception as e:
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
+    ###############################
+@app.route('/api/rendezvous', methods=['POST'])
+def add_rendezvous():
+    try:
+        data = request.json
 
-    return jsonify(rendez_vous), 200
+        if not isinstance(data, dict):
+            return jsonify({"error": "Invalid JSON format, expected a dictionary"}), 400
+
+        config = data.get('config')
+        medecinId = data.get('medecinId')
+        patientId = data.get('patientId')
+        date = data.get('date')
+        heure = data.get('heure')
+        description = data.get('description')
+        duree = data.get('duree')
+
+        
+        if not date or not heure:
+            return jsonify({"error": "Date and Heure are required"}), 400
+
+        if duree is None:
+            return jsonify({"error": "Duree is required and must be a number"}), 400
+
+        try:
+            datetime.strptime(date, '%Y-%m-%d')
+            datetime.strptime(heure, '%H:%M')
+            duree = int(duree) 
+        except ValueError as e:
+            return jsonify({"error": f"Invalid input: {str(e)}"}), 400
+
+        
+        response, error = patientServices.add_rendez_vous(config, medecinId, patientId, date, heure, description, duree)
+
+        if error:
+            return jsonify({"error": error}), 500
+
+        return jsonify(response), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)

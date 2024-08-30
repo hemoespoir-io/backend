@@ -70,7 +70,7 @@ CREATE TABLE rendez_vous (
     medecinId INT(11) NOT NULL,
     patientId INT(11) NOT NULL,
     date DATE NOT NULL,
-    heure int NOT NULL,
+    heure TIME NOT NULL,
     description TEXT,
     duree int NOT NULL,
     PRIMARY KEY (medecinId, patientId, date, heure),

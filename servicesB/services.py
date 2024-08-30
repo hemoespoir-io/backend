@@ -33,7 +33,23 @@ class patientServices:
         except Exception as e:
             print(f"Exception: {e}")
             return None, str(e)
-
+    ########################################################################
+    @staticmethod
+    def add_rendez_vous(config, medecinId, patientId, date, heure, description, duree):
+        try:
+            heure_fin = (datetime.strptime(heure, '%H:%M') + timedelta(minutes=duree)).time()
+            rendez_vous, error = DAOpatients.get_rendez_vous(config, medecinId, date, heure, heure_fin)
+            if error:
+                return None, error
+            if rendez_vous == None or len(rendez_vous) == 0:
+                DAOpatients.add_rendez_vous(config, medecinId, patientId, date, heure, description, duree)
+                return "Rendez-vous reserver avec success", None 
+            else:
+                return None, "Rendez-vous déjà pris" 
+        except Exception as e:
+            return None, e
+    
+###########################################################
     def FicheMedicale(config,patient_id):#
         try:    
             patient, e_patient = DAOpatients.fetch_patient_info_by_Id(config, patient_id)
@@ -640,4 +656,3 @@ if __name__ == "__main__":
 """ patient_info, error = patientServices.FicheMedicale(9)
     print("Informations du patient :", patient_info)
     print("Erreur :", error)"""
-  
