@@ -44,7 +44,6 @@ class DAOpatients:
             return None, str(e)
         finally:
             con.close()
-     
     @staticmethod
     def get_rendez_vous(config, medecinId, date, startHour, endHour):
         print("get RDV")
@@ -82,8 +81,8 @@ class DAOpatients:
                
                 query = """ 
                      INSERT INTO rendez_vous (medecinId, patientId, date, heure, duree, description)
-            VALUES (%s, %s, %s, %s, %s, %s);
-                """
+                    VALUES (%s, %s, %s, %s, %s, %s);
+                    """
                 cur.execute(query, (medecinId, patientId, date, heure, duree, description))
                 _ = cur.fetchone()
 
@@ -93,8 +92,48 @@ class DAOpatients:
 
         finally:
             if con:
-                con.close()
-        @staticmethod
+                con.close() 
+    
+    @staticmethod
+    def delete_rendez_vous(config, medecinId, patientId, date):
+        print("Deleting RDV")
+    
+    # Connexion à la base de données
+        con, error = connect_db(config)
+        if con is None:
+            return None, "Connection to database failed: %s" % (error)
+
+        try:
+        # Exécution de la requête SQL avec un curseur contextuel
+            with con.cursor(dictionary=True) as cur:
+                query = """ 
+                DELETE FROM rendez_vous
+                WHERE medecinId = %s 
+                AND patientId = %s 
+                AND date = %s;
+                """
+                cur.execute(query, (medecinId, patientId, date))
+            
+            # Confirmation des modifications
+                con.commit()
+
+            # Vérification du nombre de lignes affectées
+                if cur.rowcount == 0:
+                    return None, "Aucun enregistrement trouvé pour suppression"
+                
+                return "Suppression réussie", None
+
+        except Exception as e:
+        # En cas d'exception, retour en arrière de la transaction
+            con.rollback()
+            print(f"Exception: {e}")
+            return None, str(e)
+
+        finally:
+        # Fermeture de la connexion à la base de données
+            if con:
+                con.close()        
+    @staticmethod
     def fetch_patient_info_by_Id(config, patient_id):
         con, error = connect_db(config)
         if con is None:
