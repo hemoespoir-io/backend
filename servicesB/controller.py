@@ -537,7 +537,6 @@ def add_rendezvous():
             duree = int(duree) 
         except ValueError as e:
             return jsonify({"error": f"Invalid input: {str(e)}"}), 400
-
         
         response, error = patientServices.add_rendez_vous(config, medecinId, patientId, date, heure, description, duree)
 
@@ -547,7 +546,27 @@ def add_rendezvous():
         return jsonify(response), 201
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500####################################
+###################################
+@app.route('/delete_rendez_vous', methods=['DELETE'])
+def delete_rendez_vous_route():
+    try:
+        data = request.json
+        medecinId = data.get('medecinId')
+        patientId = data.get('patientId')
+        date = data.get('date')
 
+        if not medecinId or not patientId or not date:
+            return jsonify({"error": "Missing required parameters"}), 400
+
+        patient, error = patientServices.delete_rendez_vous(app.config, medecinId, patientId, date)
+
+        if error:
+            return jsonify({"error": error}), 404
+
+        return jsonify({"message": "Rendez-vous deleted successfully", "patient": patient}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 if __name__ == '__main__':
     app.run(debug=True)

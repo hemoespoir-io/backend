@@ -48,7 +48,23 @@ class patientServices:
                 return None, "Rendez-vous déjà pris" 
         except Exception as e:
             return None, e
-    
+###########################################################
+    @staticmethod
+    def delete_rendez_vous(config, medecinId, patientId, date):
+        try:
+            print(f"Tentative de suppression pour rendez-vous du patient {patientId} avec le médecin {medecinId} à la date {date}:")
+            patient, error = DAOpatients.delete_rendez_vous(config, medecinId, patientId, date)
+        
+            if error:
+                print(f"Erreur lors de la suppression : {error}")
+                return None, "Suppression non trouvée"
+
+            print(f"Rendez-vous supprimé avec succès pour le patient {patientId}")
+            return patient, None
+        except Exception as e:
+            print(f"Exception: {e}")
+            return None, str(e)
+
 ###########################################################
     def FicheMedicale(config,patient_id):#
         try:    
